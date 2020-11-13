@@ -7,6 +7,8 @@ import { apiUrl } from '../config'
 import AuthorDialog from './AuthorDialog'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
+import apipaiafufd from './Api'
+
 /**
  * @author LMF
  * @since 2020-11
@@ -25,8 +27,9 @@ export default function ArtistScreen() {
 
 
   useEffect(() => {
+    setLoading(true)
     getToken()
-    getAuthors()
+    getArtists()
   }, [])
 
   const getToken = async () => {
@@ -38,12 +41,12 @@ export default function ArtistScreen() {
     } catch (e) {
       // error reading value
     }
-    setLoading(false)
   }
 
-  const getAuthors = async () => {
-    console.log(token)
-    console.log('dsqdssqsqdqsdqsssqdssqdqsddsqqdssqdqsdsq');
+  const getArtists = async () => {
+
+    // API Setup
+
     const api = ky.extend({
       hooks: {
         beforeRequest: [
@@ -55,12 +58,12 @@ export default function ArtistScreen() {
       }
     });
 
+    // API Setup
+
     const res = await api.get(`${apiUrl}/artists`);
-      
+
     if (res) {
-      console.log("dsqsddqsqsdqs")
       const data = await res.json()
-      console.log(data);
       setAuthors(data)
     } else {
       setMessage('Erreur réseau')
@@ -70,9 +73,26 @@ export default function ArtistScreen() {
 
   const addAuthor = async (a) => {
     try {
-      const res = await ky.post(`${apiUrl}/artist`, { json: a })
+
+      // API Setup
+
+      const api = ky.extend({
+        hooks: {
+          beforeRequest: [
+            request => {
+              request.headers.set('Authorization', 'Bearer ' + token);
+              request.headers.set('Content-Type', 'application/json');
+            }
+          ]
+        }
+      });
+
+      // API Setup
+
+
+      const res = await api.post(`${apiUrl}/artist`, { json: a })
       if (res) {
-        getAuthors()
+        getArtists()
         setMessage('Nouvel auteur ajouté !')
       } else {
         setMessage("Erreur lors de l'ajout")
@@ -84,10 +104,29 @@ export default function ArtistScreen() {
   }
 
   const editAuthor = async (a) => {
+
+    console.log("ssss");
+    // API Setup
+
+    const api = ky.extend({
+      hooks: {
+        beforeRequest: [
+          request => {
+            request.headers.set('Authorization', 'Bearer ' + token);
+            request.headers.set('Content-Type', 'application/json');
+          }
+        ]
+      }
+    });
+
+    // API Setup
+
+    console.log(a);
+
     try {
-      const res = await ky.put(`${apiUrl}/artist/${a.id}`, { json: a })
+      const res = await api.put(`${apiUrl}/artist/${a.id}`, { json: a })
       if (res) {
-        getAuthors()
+        //getArtists()
         setMessage('Auteur modifié !')
       } else {
         setMessage('Erreur lors de la modification')
@@ -98,10 +137,27 @@ export default function ArtistScreen() {
     setShowEditDialog(false)
   }
 
-  const deleteAuthor = async () => {
-    const res = ky.delete(`${apiUrl}/artist`)
+  const deleteArtist = async (item) => {
+
+    // API Setup
+
+    const api = ky.extend({
+      hooks: {
+        beforeRequest: [
+          request => {
+            request.headers.set('Authorization', 'Bearer ' + token);
+            request.headers.set('Content-Type', 'application/json');
+          }
+        ]
+      }
+    });
+
+    // API Setup
+
+    const res = await api.delete(`${apiUrl}/artist/` + item.id)
     if (res) {
-      const data = await res.json()
+      setLoading(true)
+      getArtists()
     } else {
       setMessage('Erreur réseau')
     }
@@ -111,7 +167,7 @@ export default function ArtistScreen() {
   const renderAuthor = ({ item, index }) => {
     return (
       <Card style={{ margin: 16, elevation: 4 }}>
-        <Card.Title title={item.alias} subtitle={`Né(e) en ${item.birth}`} />
+        <Card.Title title={item.alias + ' ' + item.id} subtitle={`Né(e) en ${item.annee}`} />
         <Card.Cover source={{ uri: 'https://i.pravatar.cc/300?u=' + index }} />
         <Card.Actions style={{ flex: 1 }}>
           <Button
@@ -122,7 +178,7 @@ export default function ArtistScreen() {
             }}>
             Modifier
           </Button>
-          <Button style={{ flexGrow: 1 }} onPress={() => setShowDeleteDialog(true)}>
+          <Button style={{ flexGrow: 1 }} onPress={() => { deleteArtist(item);/*setShowDeleteDialog(true)*/ }}>
             Supprimer
           </Button>
         </Card.Actions>
@@ -180,7 +236,7 @@ export default function ArtistScreen() {
             <Paragraph>Êtes-vous sûr de vouloir supprimer cet auteur ?</Paragraph>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={deleteAuthor}>Oui</Button>
+            <Button onPress={deleteArtist(showDeleteDialog)}>Oui</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>

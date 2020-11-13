@@ -84,7 +84,7 @@ export default function Authentification({navigation}) {
                 <Text style={styles.forgot}>Forgot Password?</Text>
             </TouchableHighlight>
             <View style={styles.loginBtn} >
-                <Button title="sssssss" onPress={connection} style={styles.loginBtn} >
+                <Button title="Se connecter" onPress={connection} style={styles.loginBtn} >
                 </Button>
             </View>
             <View style={styles.loginBtn} >

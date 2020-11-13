@@ -11,9 +11,9 @@ export default function AuthorDialog({ title, author: initialAuthor = {}, visibl
   const [author, setAuthor] = useState(initialAuthor)
 
   // Références pour changer le focus automatiquement
-  const firstnameRef = useRef(null)
   const aliasRef = useRef(null)
-  const birthRef = useRef(null)
+  const avatarRef = useRef(null)
+  const anneeRef = useRef(null)
 
   console.log('AuthorDialog', author)
 
@@ -22,38 +22,29 @@ export default function AuthorDialog({ title, author: initialAuthor = {}, visibl
       <Dialog.Title>{title}</Dialog.Title>
       <Dialog.Content>
         <TextInput
-          label="Nom"
-          value={author.lastname}
-          onChangeText={(lastname) => setAuthor({ ...author, lastname })}
-          returnKeyType="next"
-          blurOnSubmit={false}
-          onSubmitEditing={() => firstnameRef.current.focus()}
-        />
-        <TextInput
-          ref={firstnameRef}
-          label="Prénom"
-          value={author.firstname}
-          onChangeText={(firstname) => setAuthor({ ...author, firstname })}
-          returnKeyType="next"
-          blurOnSubmit={false}
-          onSubmitEditing={() => aliasRef.current.focus()}
-        />
-        <TextInput
           ref={aliasRef}
           label="Alias"
           value={author.alias}
           onChangeText={(alias) => setAuthor({ ...author, alias })}
-          returnKeyType="next"
+          returnKeyType="Suivant"
           blurOnSubmit={false}
-          onSubmitEditing={() => birthRef.current.focus()}
+          onSubmitEditing={() => avatarRef.current.focus()}
         />
         <TextInput
-          ref={birthRef}
+          ref={avatarRef}
+          label="Avatar"
+          value={author.avatar ? author.avatar.toString() : ''}
+          onChangeText={(avatar) => setAuthor({ ...author, avatar })}
+          returnKeyType="Suivant"
+          onSubmitEditing={() => anneeRef.current.focus()}
+        />
+        <TextInput
+          ref={anneeRef}
           label="Date de naissance"
-          value={author.birth ? author.birth.toString() : ''}
-          onChangeText={(birth) => setAuthor({ ...author, birth })}
+          value={author.annee ? author.annee : ''}
+          onChangeText={(annee) => setAuthor({ ...author, annee })}
           keyboardType="numeric"
-          returnKeyType="done"
+          returnKeyType="Valider"
           onSubmitEditing={() => onSubmit(author)}
         />
       </Dialog.Content>
