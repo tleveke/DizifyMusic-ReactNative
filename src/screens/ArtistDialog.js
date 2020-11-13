@@ -2,30 +2,28 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Button, Dialog, TextInput } from 'react-native-paper'
 
 /**
- * @author Matthieu BACHELIER
+ * @artist Matthieu BACHELIER
  * @since 2020-11
  * @version 1.0
  */
-export default function AuthorDialog({ title, author: initialAuthor = {}, visible, onDismiss, onSubmit }) {
+export default function AuthorDialog({ title, artist: initialAuthor = {}, visible, onDismiss, onSubmit }) {
   // Initialisation de l'état interne du composant
-  const [author, setAuthor] = useState(initialAuthor)
+  const [artist, setAuthor] = useState(initialAuthor)
 
   // Références pour changer le focus automatiquement
   const aliasRef = useRef(null)
   const avatarRef = useRef(null)
   const anneeRef = useRef(null)
-
-  console.log('AuthorDialog', author)
-
+  
+ 
   return (
     <Dialog visible={visible} onDismiss={onDismiss}>
       <Dialog.Title>{title}</Dialog.Title>
       <Dialog.Content>
         <TextInput
-          ref={aliasRef}
           label="Alias"
-          value={author.alias}
-          onChangeText={(alias) => setAuthor({ ...author, alias })}
+          value={artist.alias}
+          onChangeText={(alias) => setAuthor({ ...artist, alias })}
           returnKeyType="Suivant"
           blurOnSubmit={false}
           onSubmitEditing={() => avatarRef.current.focus()}
@@ -33,23 +31,25 @@ export default function AuthorDialog({ title, author: initialAuthor = {}, visibl
         <TextInput
           ref={avatarRef}
           label="Avatar"
-          value={author.avatar ? author.avatar.toString() : ''}
-          onChangeText={(avatar) => setAuthor({ ...author, avatar })}
+          value={artist.avatar ? artist.avatar.toString() : ''}
+          onChangeText={(avatar) => setAuthor({ ...artist, avatar })}
           returnKeyType="Suivant"
+          blurOnSubmit={false}
           onSubmitEditing={() => anneeRef.current.focus()}
         />
         <TextInput
           ref={anneeRef}
           label="Date de naissance"
-          value={author.annee ? author.annee : ''}
-          onChangeText={(annee) => setAuthor({ ...author, annee })}
+          value={artist.annee ? artist.annee.toString() : ''}
+          onChangeText={(annee) => setAuthor({ ...artist, annee })}
           keyboardType="numeric"
           returnKeyType="Valider"
-          onSubmitEditing={() => onSubmit(author)}
+          blurOnSubmit={false}
+          onSubmitEditing={() => onSubmit(artist)}
         />
       </Dialog.Content>
       <Dialog.Actions>
-        <Button onPress={() => onSubmit(author)}>Valider</Button>
+        <Button onPress={() => onSubmit(artist)}>Valider</Button>
       </Dialog.Actions>
     </Dialog>
   )

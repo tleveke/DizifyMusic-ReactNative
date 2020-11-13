@@ -4,10 +4,9 @@ import { ActivityIndicator, Button, Card, Dialog, FAB, Paragraph, Portal, Snackb
 import ky from 'ky'
 
 import { apiUrl } from '../config'
-import AuthorDialog from './AuthorDialog'
+import ArtistDialog from './ArtistDialog'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-import apipaiafufd from './Api'
 
 /**
  * @author LMF
@@ -15,14 +14,14 @@ import apipaiafufd from './Api'
  * @version 1.0
  */
 export default function ArtistScreen() {
-  const [authors, setAuthors] = useState([])
+  const [artists, setArtists] = useState([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState(null)
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
-  const [author, setAuthor] = useState({})
+  const [artist, setArtist] = useState({})
   const [token, setToken] = useState(false)
 
 
@@ -64,14 +63,14 @@ export default function ArtistScreen() {
 
     if (res) {
       const data = await res.json()
-      setAuthors(data)
+      setArtists(data)
     } else {
       setMessage('Erreur réseau')
     }
     setLoading(false)
   }
 
-  const addAuthor = async (a) => {
+  const addArtist = async (a) => {
     try {
 
       // API Setup
@@ -103,9 +102,9 @@ export default function ArtistScreen() {
     setShowAddDialog(false)
   }
 
-  const editAuthor = async (a) => {
+  const editArtist = async (a) => {
 
-    console.log("ssss");
+
     // API Setup
 
     const api = ky.extend({
@@ -120,13 +119,10 @@ export default function ArtistScreen() {
     });
 
     // API Setup
-
-    console.log(a);
-
     try {
-      const res = await api.put(`${apiUrl}/artist/${a.id}`, { json: a })
+      const res = await api.put(`${apiUrl}/artist`, { json: a })
       if (res) {
-        //getArtists()
+        getArtists()
         setMessage('Auteur modifié !')
       } else {
         setMessage('Erreur lors de la modification')
@@ -164,21 +160,25 @@ export default function ArtistScreen() {
     setShowDeleteDialog(false)
   }
 
-  const renderAuthor = ({ item, index }) => {
+  const renderArtist = ({ item, index }) => {
     return (
       <Card style={{ margin: 16, elevation: 4 }}>
-        <Card.Title title={item.alias + ' ' + item.id} subtitle={`Né(e) en ${item.annee}`} />
+        <Card.Title title={item.alias + ' ' + item.id.toString()} subtitle={`Né(e) en ${item.annee}`} />
         <Card.Cover source={{ uri: 'https://i.pravatar.cc/300?u=' + index }} />
         <Card.Actions style={{ flex: 1 }}>
           <Button
             style={{ flexGrow: 1 }}
             onPress={() => {
-              setAuthor(item)
+              setArtist(item)
               setShowEditDialog(true)
             }}>
             Modifier
           </Button>
-          <Button style={{ flexGrow: 1 }} onPress={() => { deleteArtist(item);/*setShowDeleteDialog(true)*/ }}>
+          <Button style={{ flexGrow: 1 }}
+            onPress={() => {
+              setArtist(item)
+              setShowDeleteDialog(true)
+            }}>
             Supprimer
           </Button>
         </Card.Actions>
@@ -193,9 +193,9 @@ export default function ArtistScreen() {
       ) : (
           <>
             <FlatList
-              data={authors}
-              extraData={authors}
-              renderItem={renderAuthor}
+              data={artists}
+              extraData={artists}
+              renderItem={renderArtist}
               keyExtractor={(item, index) => index.toString()}
               ListFooterComponent={<View style={{ marginBottom: 48 }} />}
             />
@@ -217,26 +217,31 @@ export default function ArtistScreen() {
         </Snackbar>
       )}
       <Portal>
-        <AuthorDialog title="Ajouter un auteur" visible={showAddDialog} onDismiss={() => setShowAddDialog(false)} onSubmit={addAuthor} />
-        {author && showEditDialog && (
-          <AuthorDialog
+        <ArtistDialog title="Ajouter un auteur" visible={showAddDialog} onDismiss={() => setShowAddDialog(false)} onSubmit={addArtist} />
+        {artist && showEditDialog && (
+          <ArtistDialog
             title="Modifier un auteur"
-            author={author}
+            artist={artist}
             visible={showEditDialog}
             onDismiss={() => {
               setShowEditDialog(false)
-              setAuthor(null)
+              setArtist(null)
             }}
-            onSubmit={editAuthor}
+            onSubmit={editArtist}
           />
         )}
-        <Dialog visible={showDeleteDialog} onDismiss={() => setShowDeleteDialog(false)}>
+        <Dialog visible={showDeleteDialog}>
           <Dialog.Title>Confirmer votre action</Dialog.Title>
           <Dialog.Content>
             <Paragraph>Êtes-vous sûr de vouloir supprimer cet auteur ?</Paragraph>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={deleteArtist(showDeleteDialog)}>Oui</Button>
+            <View>
+              <Button onPress={() => {
+                deleteArtist(artist)
+                setShowDeleteDialog(false)
+              }}>Oui</Button>
+            </View>
           </Dialog.Actions>
         </Dialog>
       </Portal>
