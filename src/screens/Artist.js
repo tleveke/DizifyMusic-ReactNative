@@ -43,27 +43,29 @@ export default function ArtistScreen() {
 
   const getAuthors = async () => {
     console.log(token)
+    console.log('dsqdssqsqdqsdqsssqdssqdqsddsqqdssqdqsdsq');
     const api = ky.extend({
       hooks: {
         beforeRequest: [
           request => {
             request.headers.set('Authorization', 'Bearer ' + token);
+            request.headers.set('Content-Type', 'application/json');
           }
         ]
       }
     });
 
-    const res = await api.get(`${apiUrl}/artists`).json()
-    console.log(res);
-    
-    /*if (res) {
+    const res = await api.get(`${apiUrl}/artists`);
+      
+    if (res) {
+      console.log("dsqsddqsqsdqs")
       const data = await res.json()
       console.log(data);
       setAuthors(data)
     } else {
       setMessage('Erreur réseau')
     }
-    setLoading(false)*/
+    setLoading(false)
   }
 
   const addAuthor = async (a) => {
@@ -109,7 +111,7 @@ export default function ArtistScreen() {
   const renderAuthor = ({ item, index }) => {
     return (
       <Card style={{ margin: 16, elevation: 4 }}>
-        <Card.Title title={item.firstname + ' ' + item.lastname} subtitle={`Né(e) en ${item.birth}`} />
+        <Card.Title title={item.alias} subtitle={`Né(e) en ${item.birth}`} />
         <Card.Cover source={{ uri: 'https://i.pravatar.cc/300?u=' + index }} />
         <Card.Actions style={{ flex: 1 }}>
           <Button

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { NavigationContainer } from '@react-navigation/native'
@@ -7,10 +7,15 @@ import { useTheme, TouchableRipple } from 'react-native-paper'
 import ArtistScreen from '../screens/Artist'
 import AlbumScreen from '../screens/Album'
 import BookScreen from '../screens/Book'
+import Authentification from '../screens/Authentification'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function AppContainer() {
+
+export default function AppContainerScreen() {
+
   const Tab = createBottomTabNavigator()
   const { colors } = useTheme()
+  const [token, setToken] = useState(false)
 
   const renderIcon = (iconSource) => ({ focused, size }) => (
     <TouchableRipple rippleColor={colors.primary}>
@@ -18,7 +23,22 @@ export default function AppContainer() {
     </TouchableRipple>
   )
 
-  return (
+  useEffect(() => {
+    getToken()
+  }, [])
+
+  const getToken = async () => {
+    try {
+      const value = await AsyncStorage.getItem('@bearerToken')
+      setToken(value);
+      if (value !== null) {
+      }
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const navigator = (
     <NavigationContainer>
       <Tab.Navigator
         tabBarOptions={{
@@ -54,4 +74,11 @@ export default function AppContainer() {
       </Tab.Navigator>
     </NavigationContainer>
   )
+
+  if (token) {
+    return navigator
+  }
+  else {
+    return (<Authentification />)
+  }
 }

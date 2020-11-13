@@ -6,13 +6,9 @@ import AppContainer from './src/navigation/AppContainer'
 import { theme } from './src/styles'
 
 const App = () => {
-  
-  
-
-  
   return (
     <PaperProvider theme={theme}>
-      <Authentification />
+      <AppContainer />
     </PaperProvider>
   )
 }

@@ -5,8 +5,7 @@ import ky from 'ky'
 import { apiUrl } from '../config'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-export default function Authentification() {
+export default function Authentification({navigation}) {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
 
@@ -38,6 +37,9 @@ export default function Authentification() {
                             '@bearerToken',
                             responseJson.token
                         );
+
+                        navigation.navigate('Author')
+
                     } catch (error) {
                         // Error saving data
                     }
