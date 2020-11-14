@@ -4,7 +4,7 @@ import { ActivityIndicator, Button, Card, Dialog, FAB, Paragraph, Portal, Snackb
 import ky from 'ky'
 
 import { apiUrl } from '../config'
-import ArtistDialog from './ArtistDialog'
+import ArtistDialog from '../dialog/ArtistDialog'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 
@@ -28,24 +28,54 @@ export default function ArtistScreen() {
   useEffect(() => {
     setLoading(true)
     getToken()
-    getArtists()
+    //getArtists()
+    
   }, [])
 
   const getToken = async () => {
     try {
       const value = await AsyncStorage.getItem('@bearerToken')
-      setToken(value);
-      if (value !== null) {
-      }
+      setToken(value)
+      getArtistToken(value) // A revoir plus tard
     } catch (e) {
       // error reading value
     }
+  }
+
+  const getArtistToken = async (tokenn) => { // A revoir plus tard
+    
+    // API Setup
+    
+    const api = ky.extend({
+      hooks: {
+        beforeRequest: [
+          request => {
+            request.headers.set('Authorization', 'Bearer ' + tokenn);
+            request.headers.set('Content-Type', 'application/json');
+          }
+        ]
+      }
+    });
+
+    // API Setup
+
+    const res = await api.get(`${apiUrl}/artists`);
+
+    if (res) {
+      const data = await res.json()
+      setArtists(data)
+    } else {
+      setMessage('Erreur réseau')
+    }
+    setLoading(false)
   }
 
   const getArtists = async () => {
 
     // API Setup
 
+
+  
     const api = ky.extend({
       hooks: {
         beforeRequest: [
@@ -217,10 +247,10 @@ export default function ArtistScreen() {
         </Snackbar>
       )}
       <Portal>
-        <ArtistDialog title="Ajouter un auteur" visible={showAddDialog} onDismiss={() => setShowAddDialog(false)} onSubmit={addArtist} />
+        <ArtistDialog titlePopup="Ajouter un auteur" visible={showAddDialog} onDismiss={() => setShowAddDialog(false)} onSubmit={addArtist} />
         {artist && showEditDialog && (
           <ArtistDialog
-            title="Modifier un auteur"
+            titlePopup="Modifier un auteur"
             artist={artist}
             visible={showEditDialog}
             onDismiss={() => {
@@ -241,6 +271,9 @@ export default function ArtistScreen() {
                 deleteArtist(artist)
                 setShowDeleteDialog(false)
               }}>Oui</Button>
+              <Button onPress={() => {
+                setShowDeleteDialog(false)
+              }}>Non</Button>
             </View>
           </Dialog.Actions>
         </Dialog>

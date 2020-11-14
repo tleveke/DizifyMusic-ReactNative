@@ -6,7 +6,7 @@ import { Button, Dialog, TextInput } from 'react-native-paper'
  * @since 2020-11
  * @version 1.0
  */
-export default function AuthorDialog({ title, artist: initialAuthor = {}, visible, onDismiss, onSubmit }) {
+export default function AuthorDialog({ titlePopup, artist: initialAuthor = {}, visible, onDismiss, onSubmit }) {
   // Initialisation de l'état interne du composant
   const [artist, setAuthor] = useState(initialAuthor)
 
@@ -18,13 +18,13 @@ export default function AuthorDialog({ title, artist: initialAuthor = {}, visibl
  
   return (
     <Dialog visible={visible} onDismiss={onDismiss}>
-      <Dialog.Title>{title}</Dialog.Title>
+      <Dialog.Title>{titlePopup}</Dialog.Title>
       <Dialog.Content>
         <TextInput
           label="Alias"
           value={artist.alias}
           onChangeText={(alias) => setAuthor({ ...artist, alias })}
-          returnKeyType="Suivant"
+          returnKeyType="done"
           blurOnSubmit={false}
           onSubmitEditing={() => avatarRef.current.focus()}
         />
@@ -33,7 +33,7 @@ export default function AuthorDialog({ title, artist: initialAuthor = {}, visibl
           label="Avatar"
           value={artist.avatar ? artist.avatar.toString() : ''}
           onChangeText={(avatar) => setAuthor({ ...artist, avatar })}
-          returnKeyType="Suivant"
+          returnKeyType="done"
           blurOnSubmit={false}
           onSubmitEditing={() => anneeRef.current.focus()}
         />
@@ -43,7 +43,7 @@ export default function AuthorDialog({ title, artist: initialAuthor = {}, visibl
           value={artist.annee ? artist.annee.toString() : ''}
           onChangeText={(annee) => setAuthor({ ...artist, annee })}
           keyboardType="numeric"
-          returnKeyType="Valider"
+          returnKeyType="done"
           blurOnSubmit={false}
           onSubmitEditing={() => onSubmit(artist)}
         />

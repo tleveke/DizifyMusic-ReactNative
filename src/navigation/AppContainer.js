@@ -6,7 +6,7 @@ import { useTheme, TouchableRipple } from 'react-native-paper'
 
 import ArtistScreen from '../screens/Artist'
 import AlbumScreen from '../screens/Album'
-import BookScreen from '../screens/Book'
+import TitlesScreen from '../screens/Titles'
 import Authentification from '../screens/Authentification'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -58,15 +58,15 @@ export default function AppContainerScreen() {
         <Tab.Screen
           name="Book"
           options={{
-            tabBarIcon: renderIcon('book-open-page-variant'),
-            tabBarLabel: 'Titles'
+            tabBarIcon: renderIcon('music'),
+            tabBarLabel: 'Titres'
           }}
-          component={BookScreen}
+          component={TitlesScreen}
         />
         <Tab.Screen
           name="Album"
           options={{
-            tabBarIcon: renderIcon('book-open-page-variant'),
+            tabBarIcon: renderIcon('bookmark-music'),
             tabBarLabel: 'Album'
           }}
           component={AlbumScreen}

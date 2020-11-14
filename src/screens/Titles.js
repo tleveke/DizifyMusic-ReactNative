@@ -1,48 +1,50 @@
 import React, { useEffect, useState } from 'react'
 import { FlatList, View } from 'react-native'
-import { ActivityIndicator, Button, Card, Dialog, FAB, Paragraph, Snackbar, Surface, TextInput } from 'react-native-paper'
+import { ActivityIndicator, Button, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
 import ky from 'ky'
 
 import { apiUrl } from '../config'
-import AlbumDialog from '../dialog/AlbumDialog'
+import TitleDialog from '../dialog/TitleDialog'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 /**
  * @author Matthieu BACHELIER
  * @since 2020-11
  * @version 1.0
  */
-export default function AlbumScreen() {
-  const [albums, setAlbums] = useState([])
+export default function TitlesScreen() {
+  const [titles, setTitles] = useState([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState(null)
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
-  const [album, setAlbum] = useState({})
+  const [title, setTitle] = useState({})
   const [token, setToken] = useState(false)
 
 
   useEffect(() => {
     setLoading(true)
     getToken()
-    //getAlbums()
-
+    //getTitles()
+    
   }, [])
 
   const getToken = async () => {
     try {
       const value = await AsyncStorage.getItem('@bearerToken')
       setToken(value)
-      getAlbumToken(value) // A revoir plus tard
+      getTitleToken(value) // A revoir plus tard
     } catch (e) {
       // error reading value
     }
   }
 
-  const getAlbumToken = async (tokenn) => { // A revoir plus tard
-
+  const getTitleToken = async (tokenn) => { // A revoir plus tard
+    
     // API Setup
-
+    
     const api = ky.extend({
       hooks: {
         beforeRequest: [
@@ -56,23 +58,23 @@ export default function AlbumScreen() {
 
     // API Setup
 
-    const res = await api.get(`${apiUrl}/albums`);
+    const res = await api.get(`${apiUrl}/titles`);
 
     if (res) {
       const data = await res.json()
-      setAlbums(data)
+      setTitles(data)
     } else {
       setMessage('Erreur réseau')
     }
     setLoading(false)
   }
 
-  const getAlbums = async () => {
+  const getTitles = async () => {
 
     // API Setup
 
 
-
+  
     const api = ky.extend({
       hooks: {
         beforeRequest: [
@@ -86,19 +88,19 @@ export default function AlbumScreen() {
 
     // API Setup
 
-    const res = await api.get(`${apiUrl}/albums`);
+    const res = await api.get(`${apiUrl}/titles`);
 
     if (res) {
       const data = await res.json()
-      setAlbums(data)
+      setTitles(data)
     } else {
       setMessage('Erreur réseau')
     }
     setLoading(false)
   }
 
-  const addAlbum = async (a) => {
-
+  const addTitle = async (a) => {
+    
     try {
 
       // API Setup
@@ -117,9 +119,9 @@ export default function AlbumScreen() {
       // API Setup
 
 
-      const res = await api.post(`${apiUrl}/album`, { json: a })
+      const res = await api.post(`${apiUrl}/title`, { json: a })
       if (res) {
-        getAlbums()
+        getTitles()
         setMessage('Nouvel Titre ajouté !')
       } else {
         setMessage("Erreur lors de l'ajout")
@@ -131,7 +133,7 @@ export default function AlbumScreen() {
     setShowAddDialog(false)
   }
 
-  const editAlbum = async (a) => {
+  const editTitle = async (a) => {
 
 
     // API Setup
@@ -149,9 +151,9 @@ export default function AlbumScreen() {
 
     // API Setup
     try {
-      const res = await api.put(`${apiUrl}/album`, { json: a })
+      const res = await api.put(`${apiUrl}/title`, { json: a })
       if (res) {
-        getAlbums()
+        getTitles()
         setMessage('Auteur modifié !')
       } else {
         setMessage('Erreur lors de la modification')
@@ -162,7 +164,7 @@ export default function AlbumScreen() {
     setShowEditDialog(false)
   }
 
-  const deleteAlbum = async (item) => {
+  const deleteTitle = async (item) => {
 
     // API Setup
 
@@ -179,11 +181,11 @@ export default function AlbumScreen() {
 
     // API Setup
 
-    const res = await api.delete(`${apiUrl}/album/` + item.id)
+    const res = await api.delete(`${apiUrl}/title/` + item.id)
     if (res) {
       setLoading(true)
-      getAlbums()
-    } else {
+      getTitles()
+    } else {  
       setMessage('Erreur réseau')
     }
     setShowDeleteDialog(false)
@@ -192,28 +194,28 @@ export default function AlbumScreen() {
   const convertDuree = (duree) => {
 
     //if (duree)
-    let min = Math.trunc(duree / 60)
-    let sec = duree % 60
+    let min = Math.trunc(duree/60)
+    let sec = duree%60
     return `${min}:${sec}`
   }
 
-  const renderAlbum = ({ item, index }) => {
+  const renderTitle = ({ item, index }) => {
     return (
       <Card style={{ margin: 16, elevation: 4 }}>
-        <Card.Album album={item.designation + ' ' + convertDuree(item.duree)} subalbum={`Réalisé par ${item.artist.alias}`} />
+        <Card.Title title={item.designation + ' ' + convertDuree(item.duree)} subtitle={`Réalisé par ${item.artist.alias}`} />
         <Card.Cover source={{ uri: 'https://picsum.photos/300?u=' + index }} />
         <Card.Actions style={{ flex: 1 }}>
           <Button
             style={{ flexGrow: 1 }}
             onPress={() => {
-              setAlbum(item)
+              setTitle(item)
               setShowEditDialog(true)
             }}>
             Modifier
           </Button>
           <Button style={{ flexGrow: 1 }}
             onPress={() => {
-              setAlbum(item)
+              setTitle(item)
               setShowDeleteDialog(true)
             }}>
             Supprimer
@@ -230,9 +232,9 @@ export default function AlbumScreen() {
       ) : (
           <>
             <FlatList
-              data={albums}
-              extraData={albums}
-              renderItem={renderAlbum}
+              data={titles}
+              extraData={titles}
+              renderItem={renderTitle}
               keyExtractor={(item, index) => index.toString()}
               ListFooterComponent={<View style={{ marginBottom: 48 }} />}
             />
@@ -254,28 +256,28 @@ export default function AlbumScreen() {
         </Snackbar>
       )}
       <Portal>
-        <AlbumDialog titrePopup="Ajouter un titre" visible={showAddDialog} onDismiss={() => setShowAddDialog(false)} onSubmit={addAlbum} />
-        {album && showEditDialog && (
-          <AlbumDialog
-          titrePopup="Modifier un titre"
-            album={album}
+        <TitleDialog titlePopup="Ajouter un titre" visible={showAddDialog} onDismiss={() => setShowAddDialog(false)} onSubmit={addTitle} />
+        {title && showEditDialog && (
+          <TitleDialog
+            titlePopup="Modifier un titre"
+            title={title}
             visible={showEditDialog}
             onDismiss={() => {
               setShowEditDialog(false)
-              setAlbum(null)
+              setTitle(null)
             }}
-            onSubmit={editAlbum}
+            onSubmit={editTitle}
           />
         )}
         <Dialog visible={showDeleteDialog}>
-          <Dialog.Album>Confirmer votre action</Dialog.Album>
+          <Dialog.Title>Confirmer votre action</Dialog.Title>
           <Dialog.Content>
             <Paragraph>Êtes-vous sûr de vouloir supprimer cet auteur ?</Paragraph>
           </Dialog.Content>
           <Dialog.Actions>
             <View>
               <Button onPress={() => {
-                deleteAlbum(album)
+                deleteTitle(title)
                 setShowDeleteDialog(false)
               }}>Oui</Button>
             </View>
