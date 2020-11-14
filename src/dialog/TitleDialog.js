@@ -16,8 +16,12 @@ export default function TitleDialog({ titlePopup, title: initialTitle = {}, visi
     // Initialisation de l'état interne du composant
     const [title, setTitle] = useState(initialTitle)
     const [showDropDown, setShowDropDown] = useState(false);
+    const [showDropDownAlbum, setShowDropDownAlbum] = useState(false);
     const [artist, setArtist] = useState();
     const [artistList, setArtistList] = useState([])
+
+    const [album, setAlbum] = useState();
+    const [albumList, setAlbumList] = useState([])
 
     // Références pour changer le focus automatiquement
     const designationRef = useRef(null)
@@ -42,6 +46,7 @@ export default function TitleDialog({ titlePopup, title: initialTitle = {}, visi
         try {
             const value = await AsyncStorage.getItem('@bearerToken')
             getArtistToken(value) // A revoir plus tard
+            getAlbumToken(value)
         } catch (e) {
             //console.log(e);
         }
@@ -85,8 +90,49 @@ export default function TitleDialog({ titlePopup, title: initialTitle = {}, visi
         }
     }
 
+    const getAlbumToken = async (tokenn) => { // A revoir plus tard
+
+        // API Setup
+
+        const api = ky.extend({
+            hooks: {
+                beforeRequest: [
+                    request => {
+                        request.headers.set('Authorization', 'Bearer ' + tokenn);
+                        request.headers.set('Content-Type', 'application/json');
+                    }
+                ]
+            }
+        });
+
+        // API Setup
+
+        const res = await api.get(`${apiUrl}/albums`);
+        if (res) {
+            const data = await res.json()
+            let tabTempo = []
+            data.forEach(album => {
+                tabTempo.push({ label: album.entitled, value: album.id.toString() })
+            });
+            setAlbumList(tabTempo)
+            if (title.album != undefined) {
+                console.log("edit")
+                setAlbum(title.album.id.toString())
+            }
+            else {
+                console.log("add")
+                setAlbum(null)
+            }
+        } else {
+            console.log('Erreur réseau')
+        }
+    }
+
     const beforeSubmit = () => {
         title.artist = { "id": parseInt(artist) }
+        if (title.album != null) {
+            title.album = { "id": parseInt(album) }
+        }
     }
 
 
@@ -121,16 +167,7 @@ export default function TitleDialog({ titlePopup, title: initialTitle = {}, visi
                     blurOnSubmit={false}
                     onSubmitEditing={() => idArtistRef.current.focus()}
                 />
-                {/*<TextInput
-          ref={idArtistRef}
-          label="Id de l'artiste (a revoir avec un select)" //TODO voir https://openbase.io/js/react-native-paper-form-builder/documentation
-          value={title.annee ? title.annee.toString() : ''}
-          onChangeText={(annee) => setTitle({ ...title, annee })}
-          keyboardType="numeric"
-          returnKeyType="Valider"
-          blurOnSubmit={false}
-          onSubmitEditing={() => onSubmit(title)}
-        />*/}
+                
 
                 <DropDown
                     label={'Choissisez un artiste'}
@@ -141,6 +178,19 @@ export default function TitleDialog({ titlePopup, title: initialTitle = {}, visi
                     visible={showDropDown}
                     showDropDown={() => setShowDropDown(true)}
                     onDismiss={() => setShowDropDown(false)}
+                    inputProps={{
+                        right: <TextInput.Icon name={'menu-down'} />,
+                    }}
+                />
+                <DropDown
+                    label={'Choissisez un Album'}
+                    mode={'outlined'}
+                    value={album}
+                    setValue={setAlbum}
+                    list={albumList}
+                    visible={showDropDownAlbum}
+                    showDropDown={() => setShowDropDownAlbum(true)}
+                    onDismiss={() => setShowDropDownAlbum(false)}
                     inputProps={{
                         right: <TextInput.Icon name={'menu-down'} />,
                     }}

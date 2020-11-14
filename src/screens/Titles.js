@@ -196,13 +196,27 @@ export default function TitlesScreen() {
     //if (duree)
     let min = Math.trunc(duree/60)
     let sec = duree%60
+    if (sec < 10) {
+      sec = `0${sec}`;
+    }
+    if (min < 10) {
+      min = `0${min}`;
+    }
     return `${min}:${sec}`
+  }
+
+  const getAlbumEntitled = (item) => {
+    let alent = '' 
+    if (item.album !=  null){
+      alent = `dans ${item.album.entitled}`;
+    }
+    return alent;
   }
 
   const renderTitle = ({ item, index }) => {
     return (
       <Card style={{ margin: 16, elevation: 4 }}>
-        <Card.Title title={item.designation + ' ' + convertDuree(item.duree)} subtitle={`Réalisé par ${item.artist.alias}`} />
+        <Card.Title title={item.designation + ' ' + convertDuree(item.duree)} subtitle={`Réalisé par ${item.artist.alias} ${getAlbumEntitled(item)}`} />
         <Card.Cover source={{ uri: 'https://picsum.photos/300?u=' + index }} />
         <Card.Actions style={{ flex: 1 }}>
           <Button

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { FlatList, View } from 'react-native'
-import { ActivityIndicator, Button, Card, Dialog, FAB, Paragraph, Snackbar, Surface, TextInput } from 'react-native-paper'
+import { ActivityIndicator, Button, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
 import ky from 'ky'
 
 import { apiUrl } from '../config'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import AlbumDialog from '../dialog/AlbumDialog'
 /**
  * @author Matthieu BACHELIER
@@ -20,6 +21,7 @@ export default function AlbumScreen() {
 
   const [album, setAlbum] = useState({})
   const [token, setToken] = useState(false)
+  const [minutes, setMinutes] = useState("")
 
 
   useEffect(() => {
@@ -98,7 +100,6 @@ export default function AlbumScreen() {
   }
 
   const addAlbum = async (a) => {
-
     try {
 
       // API Setup
@@ -120,14 +121,13 @@ export default function AlbumScreen() {
       const res = await api.post(`${apiUrl}/album`, { json: a })
       if (res) {
         getAlbums()
-        setMessage('Nouvel Titre ajouté !')
+        setMessage('Nouvel auteur ajouté !')
       } else {
         setMessage("Erreur lors de l'ajout")
       }
     } catch (error) {
       setMessage("Erreur lors de l'ajout")
     }
-    //console.log(a);
     setShowAddDialog(false)
   }
 
@@ -192,16 +192,25 @@ export default function AlbumScreen() {
   const convertDuree = (duree) => {
 
     //if (duree)
-    let min = Math.trunc(duree / 60)
-    let sec = duree % 60
+    let min = Math.trunc(duree/60)
+    let sec = duree%60
+    if (sec < 10) {
+      sec = `0${sec}`;
+    }
+    if (min < 10) {
+      min = `0${min}`;
+    }
     return `${min}:${sec}`
   }
 
   const renderAlbum = ({ item, index }) => {
+
+    
+
     return (
       <Card style={{ margin: 16, elevation: 4 }}>
-        <Card.Album album={item.designation + ' ' + convertDuree(item.duree)} subalbum={`Réalisé par ${item.artist.alias}`} />
-        <Card.Cover source={{ uri: 'https://picsum.photos/300?u=' + index }} />
+        <Card.Title title={item.entitled + ' ' + convertDuree(item.dureeTotale) } subtitle={`Créé en ${item.annee} par ${item.artist.alias}`} />
+        <Card.Cover source={{ uri: 'https://i.pravatar.cc/300?u=' + index }} />
         <Card.Actions style={{ flex: 1 }}>
           <Button
             style={{ flexGrow: 1 }}
@@ -254,10 +263,10 @@ export default function AlbumScreen() {
         </Snackbar>
       )}
       <Portal>
-        <AlbumDialog titrePopup="Ajouter un titre" visible={showAddDialog} onDismiss={() => setShowAddDialog(false)} onSubmit={addAlbum} />
+        <AlbumDialog titlePopup="Ajouter un Album" visible={showAddDialog} onDismiss={() => setShowAddDialog(false)} onSubmit={addAlbum} />
         {album && showEditDialog && (
           <AlbumDialog
-          titrePopup="Modifier un titre"
+            titlePopup="Modifier un Album"
             album={album}
             visible={showEditDialog}
             onDismiss={() => {
@@ -268,7 +277,7 @@ export default function AlbumScreen() {
           />
         )}
         <Dialog visible={showDeleteDialog}>
-          <Dialog.Album>Confirmer votre action</Dialog.Album>
+          <Dialog.Title>Confirmer votre action</Dialog.Title>
           <Dialog.Content>
             <Paragraph>Êtes-vous sûr de vouloir supprimer cet auteur ?</Paragraph>
           </Dialog.Content>
@@ -278,6 +287,9 @@ export default function AlbumScreen() {
                 deleteAlbum(album)
                 setShowDeleteDialog(false)
               }}>Oui</Button>
+              <Button onPress={() => {
+                setShowDeleteDialog(false)
+              }}>Non</Button>
             </View>
           </Dialog.Actions>
         </Dialog>

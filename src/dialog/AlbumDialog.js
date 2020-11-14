@@ -12,16 +12,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
  * @since 2020-11
  * @version 1.0
  */
-export default function AlbumDialog({ titlePopup, title: initialTitle = {}, visible, onDismiss, onSubmit }) {
+export default function AlbumDialog({ titlePopup, album: initialAlbum = {}, visible, onDismiss, onSubmit }) {
     // Initialisation de l'état interne du composant
-    const [title, setTitle] = useState(initialTitle)
+    const [album, setAlbum] = useState(initialAlbum)
     const [showDropDown, setShowDropDown] = useState(false);
     const [artist, setArtist] = useState();
     const [artistList, setArtistList] = useState([])
 
     // Références pour changer le focus automatiquement
-    const designationRef = useRef(null)
-    const dureeRef = useRef(null)
+    const entitledRef = useRef(null)
+    const anneeRef = useRef(null)
     const imageRef = useRef(null)
     const idArtistRef = useRef(null)
 
@@ -72,9 +72,9 @@ export default function AlbumDialog({ titlePopup, title: initialTitle = {}, visi
                 tabTempo.push({ label: artist.alias, value: artist.id.toString() })
             });
             setArtistList(tabTempo)
-            if (title.artist != undefined) {
+            if (album.artist != undefined) {
                 console.log("edit")
-                setArtist(title.artist.id.toString())
+                setArtist(album.artist.id.toString())
             }
             else {
                 console.log("add")
@@ -86,7 +86,7 @@ export default function AlbumDialog({ titlePopup, title: initialTitle = {}, visi
     }
 
     const beforeSubmit = () => {
-        title.artist = { "id": parseInt(artist) }
+        album.artist = { "id": parseInt(artist) }
     }
 
 
@@ -95,18 +95,18 @@ export default function AlbumDialog({ titlePopup, title: initialTitle = {}, visi
             <Dialog.Title>{titlePopup}</Dialog.Title>
             <Dialog.Content>
                 <TextInput
-                    label="Nom du titre"
-                    value={title.designation}
-                    onChangeText={(designation) => setTitle({ ...title, designation })}
+                    label="Nom de l'album"
+                    value={album.entitled}
+                    onChangeText={(entitled) => setAlbum({ ...album, entitled })}
                     returnKeyType="done"
                     blurOnSubmit={false}
-                    onSubmitEditing={() => dureeRef.current.focus()}
+                    onSubmitEditing={() => anneeRef.current.focus()}
                 />
                 <TextInput
-                    ref={dureeRef}
-                    label="Durée en secondes"
-                    value={title.duree ? title.duree.toString() : ''}
-                    onChangeText={(duree) => setTitle({ ...title, duree })}
+                    ref={anneeRef}
+                    label="Année de sortie"
+                    value={album.annee ? album.annee.toString() : ''}
+                    onChangeText={(annee) => setAlbum({ ...album, annee })}
                     keyboardType="numeric"
                     returnKeyType="done"
                     blurOnSubmit={false}
@@ -115,22 +115,12 @@ export default function AlbumDialog({ titlePopup, title: initialTitle = {}, visi
                 <TextInput
                     ref={imageRef}
                     label="Image"
-                    value={title.image ? title.image.toString() : ''}
-                    onChangeText={(image) => setTitle({ ...title, image })}
+                    value={album.image ? album.image.toString() : ''}
+                    onChangeText={(image) => setAlbum({ ...album, image })}
                     returnKeyType="done"
                     blurOnSubmit={false}
                     onSubmitEditing={() => idArtistRef.current.focus()}
                 />
-                {/*<TextInput
-          ref={idArtistRef}
-          label="Id de l'artiste (a revoir avec un select)" //TODO voir https://openbase.io/js/react-native-paper-form-builder/documentation
-          value={title.annee ? title.annee.toString() : ''}
-          onChangeText={(annee) => setTitle({ ...title, annee })}
-          keyboardType="numeric"
-          returnKeyType="Valider"
-          blurOnSubmit={false}
-          onSubmitEditing={() => onSubmit(title)}
-        />*/}
 
                 <DropDown
                     label={'Choissisez un artiste'}
@@ -148,7 +138,7 @@ export default function AlbumDialog({ titlePopup, title: initialTitle = {}, visi
 
             </Dialog.Content>
             <Dialog.Actions>
-                <Button onPress={() => { beforeSubmit(); onSubmit(title) }}>Valider</Button>
+                <Button onPress={() => { beforeSubmit(); onSubmit(album) }}>Valider</Button>
             </Dialog.Actions>
         </Dialog>
     )
