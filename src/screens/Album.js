@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { FlatList, View } from 'react-native'
+import { FlatList, View, StyleSheet } from 'react-native'
 import { ActivityIndicator, Button, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
 import ky from 'ky'
 
@@ -21,19 +21,30 @@ export default function AlbumScreen() {
 
   const [album, setAlbum] = useState({})
   const [token, setToken] = useState(false)
-  const [minutes, setMinutes] = useState("")
+  const [emailUser, setEmailUser] = useState("")
 
+  const styles = StyleSheet.create({
+    fab: {
+      position: 'absolute',
+      margin: 16,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "white"
+    },
+  })
 
   useEffect(() => {
     setLoading(true)
-    getToken()
+    getTokenEmail()
     //getAlbums()
 
   }, [])
 
-  const getToken = async () => {
+  const getTokenEmail = async () => {
     try {
       const value = await AsyncStorage.getItem('@bearerToken')
+      const emailUser = await AsyncStorage.getItem('@emailUser')
+      setEmailUser(emailUser)
       setToken(value)
       getAlbumToken(value) // A revoir plus tard
     } catch (e) {
@@ -58,7 +69,7 @@ export default function AlbumScreen() {
 
     // API Setup
 
-    const res = await api.get(`${apiUrl}/albums`);
+    const res = await api.get(`${apiUrl}/albums/`+emailUser);
 
     if (res) {
       const data = await res.json()
@@ -88,7 +99,7 @@ export default function AlbumScreen() {
 
     // API Setup
 
-    const res = await api.get(`${apiUrl}/albums`);
+    const res = await api.get(`${apiUrl}/albums/`+emailUser);
 
     if (res) {
       const data = await res.json()
@@ -202,14 +213,54 @@ export default function AlbumScreen() {
     }
     return `${min}:${sec}`
   }
+  const changeFavoris = async (item) => {
+    // API Setup
 
+    const api = ky.extend({
+      hooks: {
+        beforeRequest: [
+          request => {
+            request.headers.set('Authorization', 'Bearer ' + token);
+            request.headers.set('Content-Type', 'application/json');
+          }
+        ]
+      }
+    });
+
+    // API Setup
+
+    var favoris = {
+      "user": {"email":emailUser},
+      "albums": [item]
+    }
+    console.log(favoris)
+    const res = await api.put(`${apiUrl}/favoris/album/`, { json: favoris });
+
+    if (res) {
+      getAlbums()
+    } else {
+      setMessage('Erreur réseau')
+    }
+  }
   const renderAlbum = ({ item, index }) => {
 
-    
+    let favIcon = 'heart-outline';
+    if (item.favoris == true) {
+      favIcon = 'heart';
+    }
 
     return (
       <Card style={{ margin: 16, elevation: 4 }}>
         <Card.Title title={item.entitled + ' ' + convertDuree(item.dureeTotale) } subtitle={`Créé en ${item.annee} par ${item.artist.alias}`} />
+        <Card.Content>
+          <FAB
+            style={styles.fab}
+            small
+            color="red"
+            icon={favIcon}
+            onPress={() => changeFavoris(item)}
+          />
+        </Card.Content>
         <Card.Cover source={{ uri: 'https://i.pravatar.cc/300?u=' + index }} />
         <Card.Actions style={{ flex: 1 }}>
           <Button
@@ -254,7 +305,7 @@ export default function AlbumScreen() {
           right: 16,
           bottom: 0
         }}
-        icon="account-plus"
+        icon="album"
         onPress={() => setShowAddDialog(true)}
       />
       {message && (

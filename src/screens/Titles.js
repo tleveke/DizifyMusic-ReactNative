@@ -3,6 +3,7 @@ import { FlatList, View } from 'react-native'
 import { ActivityIndicator, Button, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
 import ky from 'ky'
 
+import { StyleSheet } from 'react-native';
 import { apiUrl } from '../config'
 import TitleDialog from '../dialog/TitleDialog'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -22,18 +23,30 @@ export default function TitlesScreen() {
 
   const [title, setTitle] = useState({})
   const [token, setToken] = useState(false)
+  const [emailUser, setEmailUser] = useState("")
 
+  const styles = StyleSheet.create({
+    fab: {
+      position: 'absolute',
+      margin: 16,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "white"
+    },
+  })
 
   useEffect(() => {
     setLoading(true)
-    getToken()
+    getTokenEmail()
     //getTitles()
-    
+
   }, [])
 
-  const getToken = async () => {
+  const getTokenEmail = async () => {
     try {
       const value = await AsyncStorage.getItem('@bearerToken')
+      const emailUser = await AsyncStorage.getItem('@emailUser')
+      setEmailUser(emailUser)
       setToken(value)
       getTitleToken(value) // A revoir plus tard
     } catch (e) {
@@ -42,9 +55,9 @@ export default function TitlesScreen() {
   }
 
   const getTitleToken = async (tokenn) => { // A revoir plus tard
-    
+
     // API Setup
-    
+
     const api = ky.extend({
       hooks: {
         beforeRequest: [
@@ -58,7 +71,7 @@ export default function TitlesScreen() {
 
     // API Setup
 
-    const res = await api.get(`${apiUrl}/titles`);
+    const res = await api.get(`${apiUrl}/titles/` + emailUser);
 
     if (res) {
       const data = await res.json()
@@ -74,7 +87,7 @@ export default function TitlesScreen() {
     // API Setup
 
 
-  
+
     const api = ky.extend({
       hooks: {
         beforeRequest: [
@@ -88,7 +101,7 @@ export default function TitlesScreen() {
 
     // API Setup
 
-    const res = await api.get(`${apiUrl}/titles`);
+    const res = await api.get(`${apiUrl}/titles/` + emailUser);
 
     if (res) {
       const data = await res.json()
@@ -100,7 +113,7 @@ export default function TitlesScreen() {
   }
 
   const addTitle = async (a) => {
-    
+
     try {
 
       // API Setup
@@ -185,7 +198,7 @@ export default function TitlesScreen() {
     if (res) {
       setLoading(true)
       getTitles()
-    } else {  
+    } else {
       setMessage('Erreur réseau')
     }
     setShowDeleteDialog(false)
@@ -194,8 +207,8 @@ export default function TitlesScreen() {
   const convertDuree = (duree) => {
 
     //if (duree)
-    let min = Math.trunc(duree/60)
-    let sec = duree%60
+    let min = Math.trunc(duree / 60)
+    let sec = duree % 60
     if (sec < 10) {
       sec = `0${sec}`;
     }
@@ -206,17 +219,62 @@ export default function TitlesScreen() {
   }
 
   const getAlbumEntitled = (item) => {
-    let alent = '' 
-    if (item.album !=  null){
+    let alent = ''
+    if (item.album != null) {
       alent = `dans ${item.album.entitled}`;
     }
     return alent;
   }
+  
+  const changeFavoris = async (item) => {
+    // API Setup
+
+    const api = ky.extend({
+      hooks: {
+        beforeRequest: [
+          request => {
+            request.headers.set('Authorization', 'Bearer ' + token);
+            request.headers.set('Content-Type', 'application/json');
+          }
+        ]
+      }
+    });
+
+    // API Setup
+
+    var favoris = {
+      "user": {"email":emailUser},
+      "titles": [item]
+    }
+    console.log(favoris)
+    const res = await api.put(`${apiUrl}/favoris/title/`, { json: favoris });
+
+    if (res) {
+      getTitles()
+    } else {
+      setMessage('Erreur réseau')
+    }
+  }
 
   const renderTitle = ({ item, index }) => {
+
+    let favIcon = 'heart-outline';
+    if (item.favoris == true) {
+      favIcon = 'heart';
+    }
+
     return (
       <Card style={{ margin: 16, elevation: 4 }}>
         <Card.Title title={item.designation + ' ' + convertDuree(item.duree)} subtitle={`Réalisé par ${item.artist.alias} ${getAlbumEntitled(item)}`} />
+        <Card.Content>
+          <FAB
+            style={styles.fab}
+            small
+            color="red"
+            icon={favIcon}
+            onPress={() => changeFavoris(item)}
+          />
+        </Card.Content>
         <Card.Cover source={{ uri: 'https://picsum.photos/300?u=' + index }} />
         <Card.Actions style={{ flex: 1 }}>
           <Button
@@ -261,7 +319,7 @@ export default function TitlesScreen() {
           right: 16,
           bottom: 0
         }}
-        icon="account-plus"
+        icon="music-note-plus"
         onPress={() => setShowAddDialog(true)}
       />
       {message && (
@@ -294,6 +352,9 @@ export default function TitlesScreen() {
                 deleteTitle(title)
                 setShowDeleteDialog(false)
               }}>Oui</Button>
+              <Button onPress={() => {
+                setShowDeleteDialog(false)
+              }}>Non</Button>
             </View>
           </Dialog.Actions>
         </Dialog>

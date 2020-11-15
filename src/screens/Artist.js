@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { FlatList, View } from 'react-native'
+import { FlatList, View, StyleSheet } from 'react-native'
 import { ActivityIndicator, Button, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
 import ky from 'ky'
 
@@ -23,18 +23,31 @@ export default function ArtistScreen() {
 
   const [artist, setArtist] = useState({})
   const [token, setToken] = useState(false)
+  const [emailUser, setEmailUser] = useState("")
+
+  const styles = StyleSheet.create({
+    fab: {
+      position: 'absolute',
+      margin: 16,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "white"
+    },
+  })
 
 
   useEffect(() => {
     setLoading(true)
-    getToken()
+    getTokenEmail()
     //getArtists()
-    
+
   }, [])
 
-  const getToken = async () => {
+  const getTokenEmail = async () => {
     try {
       const value = await AsyncStorage.getItem('@bearerToken')
+      const emailUser = await AsyncStorage.getItem('@emailUser')
+      setEmailUser(emailUser)
       setToken(value)
       getArtistToken(value) // A revoir plus tard
     } catch (e) {
@@ -43,9 +56,9 @@ export default function ArtistScreen() {
   }
 
   const getArtistToken = async (tokenn) => { // A revoir plus tard
-    
+
     // API Setup
-    
+
     const api = ky.extend({
       hooks: {
         beforeRequest: [
@@ -59,7 +72,7 @@ export default function ArtistScreen() {
 
     // API Setup
 
-    const res = await api.get(`${apiUrl}/artists`);
+    const res = await api.get(`${apiUrl}/artists/` + emailUser);
 
     if (res) {
       const data = await res.json()
@@ -74,8 +87,6 @@ export default function ArtistScreen() {
 
     // API Setup
 
-
-  
     const api = ky.extend({
       hooks: {
         beforeRequest: [
@@ -89,7 +100,7 @@ export default function ArtistScreen() {
 
     // API Setup
 
-    const res = await api.get(`${apiUrl}/artists`);
+    const res = await api.get(`${apiUrl}/artists/` + emailUser);
 
     if (res) {
       const data = await res.json()
@@ -190,10 +201,56 @@ export default function ArtistScreen() {
     setShowDeleteDialog(false)
   }
 
+  const changeFavoris = async (item) => {
+    // API Setup
+
+    const api = ky.extend({
+      hooks: {
+        beforeRequest: [
+          request => {
+            request.headers.set('Authorization', 'Bearer ' + token);
+            request.headers.set('Content-Type', 'application/json');
+          }
+        ]
+      }
+    });
+
+    // API Setup
+
+    var favoris = {
+      "user": {"email":emailUser},
+      "artists": [item]
+    }
+    console.log(favoris)
+    const res = await api.put(`${apiUrl}/favoris/artist/`, { json: favoris });
+
+    if (res) {
+      getArtists()
+    } else {
+      setMessage('Erreur réseau')
+    }
+    setLoading(false)
+  }
+
   const renderArtist = ({ item, index }) => {
+
+    let favIcon = 'heart-outline';
+    if (item.favoris) {
+      favIcon = 'heart';
+    }
+
     return (
       <Card style={{ margin: 16, elevation: 4 }}>
-        <Card.Title title={item.alias + ' ' + item.id.toString()} subtitle={`Né(e) en ${item.annee}`} />
+        <Card.Title title={item.alias} subtitle={`Né(e) en ${item.annee}`} />
+        <Card.Content>
+          <FAB
+            style={styles.fab}
+            small
+            color="red"
+            icon={favIcon}
+            onPress={() => changeFavoris(item)}
+          />
+        </Card.Content>
         <Card.Cover source={{ uri: 'https://i.pravatar.cc/300?u=' + index }} />
         <Card.Actions style={{ flex: 1 }}>
           <Button

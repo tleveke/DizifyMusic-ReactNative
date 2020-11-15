@@ -71,6 +71,14 @@ export default function AppContainerScreen() {
           }}
           component={AlbumScreen}
         />
+        <Tab.Screen
+          name="Favoris"
+          options={{
+            tabBarIcon: renderIcon('account-heart'),
+            tabBarLabel: 'Favoris'
+          }}
+          component={AlbumScreen}
+        />
       </Tab.Navigator>
     </NavigationContainer>
   )

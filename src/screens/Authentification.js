@@ -37,9 +37,10 @@ export default function Authentification({navigation}) {
                             '@bearerToken',
                             responseJson.token
                         );
-
-                        navigation.navigate('Author')
-
+                        await AsyncStorage.setItem(
+                            '@emailUser',
+                            email
+                        );
                     } catch (error) {
                         // Error saving data
                     }
