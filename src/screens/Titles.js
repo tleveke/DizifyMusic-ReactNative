@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { FlatList, View } from 'react-native'
-import { ActivityIndicator, Button, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
+import { ActivityIndicator,Appbar, Button, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
 import ky from 'ky'
 
 import { StyleSheet } from 'react-native';
@@ -14,12 +14,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
  * @version 1.0
  */
 export default function TitlesScreen() {
+
+  const [titlesAll, setTitlesAll] = useState([])
   const [titles, setTitles] = useState([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState(null)
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showFavorisList, setShowFavorisList] = useState(false)
 
   const [title, setTitle] = useState({})
   const [token, setToken] = useState(false)
@@ -76,6 +79,7 @@ export default function TitlesScreen() {
     if (res) {
       const data = await res.json()
       setTitles(data)
+      setTitlesAll(data)
     } else {
       setMessage('Erreur réseau')
     }
@@ -105,7 +109,8 @@ export default function TitlesScreen() {
 
     if (res) {
       const data = await res.json()
-      setTitles(data)
+      setTitlesAll(data)
+      showFavoris()
     } else {
       setMessage('Erreur réseau')
     }
@@ -225,7 +230,7 @@ export default function TitlesScreen() {
     }
     return alent;
   }
-  
+
   const changeFavoris = async (item) => {
     // API Setup
 
@@ -243,7 +248,7 @@ export default function TitlesScreen() {
     // API Setup
 
     var favoris = {
-      "user": {"email":emailUser},
+      "user": { "email": emailUser },
       "titles": [item]
     }
     console.log(favoris)
@@ -254,6 +259,26 @@ export default function TitlesScreen() {
     } else {
       setMessage('Erreur réseau')
     }
+  }
+
+  const showFavoris = () => {
+    
+    console.log(showFavorisList)
+    let tabTempo = [];
+
+    if (showFavorisList == true) {
+      titlesAll.forEach((title) => {
+        if (title.favoris == true) {
+          tabTempo.push(title)
+        }
+      });
+    }
+    else {
+      tabTempo = titlesAll;
+    }
+
+    setTitles(tabTempo)
+
   }
 
   const renderTitle = ({ item, index }) => {
@@ -297,8 +322,16 @@ export default function TitlesScreen() {
     )
   }
 
+
+
   return (
+
     <Surface style={{ flex: 1 }}>
+
+      <Appbar.Header style={{ backgroundColor:'#2F8D96'}}>
+        <Appbar.Content title="Titres"/>
+        <Appbar.Action icon="heart-multiple"  onPress={() => { setShowFavorisList(!showFavorisList);showFavoris()}}/>
+      </Appbar.Header>
       {loading ? (
         <ActivityIndicator style={{ flex: 1, justifyContent: 'center', alignContent: 'center', height: '100%' }} />
       ) : (

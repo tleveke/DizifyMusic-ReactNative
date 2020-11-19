@@ -79,6 +79,14 @@ export default function AppContainerScreen() {
           }}
           component={AlbumScreen}
         />
+        <Tab.Screen
+          name="Playlist"
+          options={{
+            tabBarIcon: renderIcon('playlist-music'),
+            tabBarLabel: 'Playlist'
+          }}
+          component={AlbumScreen}
+        />
       </Tab.Navigator>
     </NavigationContainer>
   )

@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { FlatList, View, StyleSheet } from 'react-native'
-import { ActivityIndicator, Button,Appbar, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
+import { ActivityIndicator, Button, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
 import ky from 'ky'
 
 import { apiUrl } from '../config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import AlbumDialog from '../dialog/AlbumDialog'
 /**
- * @author Matthieu BACHELIER
+ * @author JMT
  * @since 2020-11
  * @version 1.0
  */
-export default function AlbumScreen() {
+export default function FavorisScreen() {
   const [albums, setAlbums] = useState([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState(null)
@@ -22,8 +22,6 @@ export default function AlbumScreen() {
   const [album, setAlbum] = useState({})
   const [token, setToken] = useState(false)
   const [emailUser, setEmailUser] = useState("")
-  const [albumsAll, setAlbumsAll] = useState([])
-  const [showAlbumsFav, setShowAlbumsFav] = useState(false)
 
   const styles = StyleSheet.create({
     fab: {
@@ -38,7 +36,6 @@ export default function AlbumScreen() {
   useEffect(() => {
     setLoading(true)
     getTokenEmail()
-    //getAlbums()
 
   }, [])
 
@@ -71,7 +68,7 @@ export default function AlbumScreen() {
 
     // API Setup
 
-    const res = await api.get(`${apiUrl}/albums/`+emailUser);
+    const res = await api.get(`${apiUrl}/favoris/user/`+emailUser);
 
     if (res) {
       const data = await res.json()
@@ -244,9 +241,6 @@ export default function AlbumScreen() {
       setMessage('Erreur réseau')
     }
   }
-
-  //const showFavoris = 
-
   const renderAlbum = ({ item, index }) => {
 
     let favIcon = 'heart-outline';
@@ -290,10 +284,6 @@ export default function AlbumScreen() {
 
   return (
     <Surface style={{ flex: 1 }}>
-      <Appbar.Header style={{ backgroundColor:'#2F8D96'}}>
-        <Appbar.Content title="Albums"/>
-        <Appbar.Action icon="heart-multiple"  onPress={() => {showFavoris(); setShowFavorisList(!showFavorisList)}}/>
-      </Appbar.Header>
       {loading ? (
         <ActivityIndicator style={{ flex: 1, justifyContent: 'center', alignContent: 'center', height: '100%' }} />
       ) : (
