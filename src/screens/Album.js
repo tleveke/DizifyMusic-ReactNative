@@ -1,27 +1,30 @@
 import React, { useEffect, useState } from 'react'
 import { FlatList, View, StyleSheet } from 'react-native'
-import { ActivityIndicator, Button,Appbar, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
+import { ActivityIndicator, Button, Appbar, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
 import ky from 'ky'
 
 import { apiUrl } from '../config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import UserDialog from '../dialog/UserDialog'
 import AlbumDialog from '../dialog/AlbumDialog'
 /**
  * @author Matthieu BACHELIER
  * @since 2020-11
  * @version 1.0
  */
-export default function AlbumScreen() {
+export default function AlbumScreen({ navigation }) {
   const [albums, setAlbums] = useState([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState(null)
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showUserDialog, setShowUserDialog] = useState(false)
 
   const [album, setAlbum] = useState({})
   const [token, setToken] = useState(false)
   const [emailUser, setEmailUser] = useState("")
+  const [isAdmin, setIsAdmin] = useState(false)
   const [albumsAll, setAlbumsAll] = useState([])
   const [showAlbumsFav, setShowAlbumsFav] = useState(false)
 
@@ -37,15 +40,26 @@ export default function AlbumScreen() {
 
   useEffect(() => {
     setLoading(true)
-    getTokenEmail()
+    getTokenEmailAdmin()
+
+    const unsubscribe = navigation.addListener('focus', () => {
+      if (emailUser != '') {
+        getAlbums();
+      }
+    });
+
+    return unsubscribe;
+
     //getAlbums()
 
-  }, [])
+  }, [navigation])
 
-  const getTokenEmail = async () => {
+  const getTokenEmailAdmin = async () => {
     try {
       const value = await AsyncStorage.getItem('@bearerToken')
       const emailUser = await AsyncStorage.getItem('@emailUser')
+      const isAdmin = await AsyncStorage.getItem('@isAdmin')
+      setIsAdmin((isAdmin === 'true'))
       setEmailUser(emailUser)
       setToken(value)
       getAlbumToken(value) // A revoir plus tard
@@ -71,7 +85,7 @@ export default function AlbumScreen() {
 
     // API Setup
 
-    const res = await api.get(`${apiUrl}/albums/`+emailUser);
+    const res = await api.get(`${apiUrl}/albums/` + emailUser);
 
     if (res) {
       const data = await res.json()
@@ -101,7 +115,7 @@ export default function AlbumScreen() {
 
     // API Setup
 
-    const res = await api.get(`${apiUrl}/albums/`+emailUser);
+    const res = await api.get(`${apiUrl}/albums/` + emailUser);
 
     if (res) {
       const data = await res.json()
@@ -205,8 +219,8 @@ export default function AlbumScreen() {
   const convertDuree = (duree) => {
 
     //if (duree)
-    let min = Math.trunc(duree/60)
-    let sec = duree%60
+    let min = Math.trunc(duree / 60)
+    let sec = duree % 60
     if (sec < 10) {
       sec = `0${sec}`;
     }
@@ -232,7 +246,7 @@ export default function AlbumScreen() {
     // API Setup
 
     var favoris = {
-      "user": {"email":emailUser},
+      "user": { "email": emailUser },
       "albums": [item]
     }
     console.log(favoris)
@@ -245,7 +259,24 @@ export default function AlbumScreen() {
     }
   }
 
-  //const showFavoris = 
+  const deleteToken = async () => {
+    try {
+      await AsyncStorage.removeItem('@bearerToken')
+      return null
+    } catch (e) {
+      // remove error
+    }
+  }
+
+  const goToDiconnect = () => {
+    deleteToken()
+    navigation.navigate('Accueil');
+  }
+
+  const editUser = () => {
+    setShowUserDialog(false)
+    setMessage('Profil modifié');
+  } 
 
   const renderAlbum = ({ item, index }) => {
 
@@ -256,18 +287,18 @@ export default function AlbumScreen() {
 
     return (
       <Card style={{ margin: 16, elevation: 4 }}>
-        <Card.Title title={item.entitled + ' ' + convertDuree(item.dureeTotale) } subtitle={`Créé en ${item.annee} par ${item.artist.alias}`} />
+        <Card.Title title={item.entitled + ' ' + convertDuree(item.dureeTotale)} subtitle={`Créé en ${item.annee} par ${item.artist.alias}`} />
         <Card.Content>
-          <FAB
+        { !isAdmin && (<FAB
             style={styles.fab}
             small
             color="red"
             icon={favIcon}
             onPress={() => changeFavoris(item)}
-          />
+          />)}
         </Card.Content>
-        <Card.Cover source={{ uri: 'https://i.pravatar.cc/300?u=' + index }} />
-        <Card.Actions style={{ flex: 1 }}>
+        <Card.Cover source={{ uri: 'https://i.pravatar.cc/300?u=' + item.image }} />
+        { isAdmin && (<Card.Actions style={{ flex: 1 }}>
           <Button
             style={{ flexGrow: 1 }}
             onPress={() => {
@@ -283,16 +314,19 @@ export default function AlbumScreen() {
             }}>
             Supprimer
           </Button>
-        </Card.Actions>
+        </Card.Actions>)}
       </Card>
     )
   }
 
   return (
     <Surface style={{ flex: 1 }}>
-      <Appbar.Header style={{ backgroundColor:'#2F8D96'}}>
-        <Appbar.Content title="Albums"/>
-        <Appbar.Action icon="heart-multiple"  onPress={() => {showFavoris(); setShowFavorisList(!showFavorisList)}}/>
+
+      <Appbar.Header style={{ backgroundColor: '#2F8D96' }}>
+        <Appbar.Content title="Album" />
+
+        <Appbar.Action icon="account-edit" onPress={() => { setShowUserDialog(true) }} />
+        <Appbar.Action icon="logout" onPress={() => { goToDiconnect() }} />
       </Appbar.Header>
       {loading ? (
         <ActivityIndicator style={{ flex: 1, justifyContent: 'center', alignContent: 'center', height: '100%' }} />
@@ -307,7 +341,7 @@ export default function AlbumScreen() {
             />
           </>
         )}
-      <FAB
+      { isAdmin && (<FAB
         style={{
           position: 'absolute',
           margin: 16,
@@ -316,7 +350,7 @@ export default function AlbumScreen() {
         }}
         icon="album"
         onPress={() => setShowAddDialog(true)}
-      />
+      />)}
       {message && (
         <Snackbar visible={message !== null} onDismiss={() => setMessage(null)} duration={Snackbar.DURATION_SHORT}>
           {message}
@@ -334,6 +368,16 @@ export default function AlbumScreen() {
               setAlbum(null)
             }}
             onSubmit={editAlbum}
+          />
+        )}
+        {showUserDialog && (
+          <UserDialog
+            titlePopup="Modifier votre profil"
+            visible={showUserDialog}
+            onDismiss={() => {
+              setShowUserDialog(false)
+            }}
+            onSubmit={editUser}
           />
         )}
         <Dialog visible={showDeleteDialog}>

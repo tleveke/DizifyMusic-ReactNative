@@ -5,9 +5,11 @@ import ky from 'ky'
 import { apiUrl } from '../config'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function Authentification({navigation}) {
+export default function Authentification({ navigation }) {
     const [email, setEmail] = useState("")
+    const [emailUser, setEmailUser] = useState("")
     const [password, setPassword] = useState("")
+    const [token, setToken] = useState(false)
 
     const api = ky.extend({
         hooks: {
@@ -18,6 +20,57 @@ export default function Authentification({navigation}) {
             ]
         }
     });
+
+    useEffect(() => {
+        getTokenEmail()
+    }, [])
+
+    const getTokenEmail = async () => {
+        try {
+            const tokenSto = await AsyncStorage.getItem('@bearerToken')
+            const emailUser = await AsyncStorage.getItem('@emailUser')
+            setEmailUser(emailUser);
+            setToken(tokenSto);
+            if (tokenSto && emailUser) {
+                console.log('yo')
+                isValidToken(tokenSto,emailUser)
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+    const isValidToken = async (tokenSto,emailUser) => {
+
+        const api = ky.extend({
+            hooks: {
+                beforeRequest: [
+                    request => {
+                        request.headers.set('Authorization', 'Bearer ' + tokenSto);
+                        request.headers.set('Content-Type', 'application/json');
+                    }
+                ]
+            }
+        });
+
+        // API Setup
+
+        var json = {
+            "token":tokenSto,
+            "email":emailUser
+        }
+        console.log(json)
+
+        const res = await api.post(`${apiUrl}/isTokenValid`, {json:json});
+
+        
+        if (res) {
+            if (await res.text() === 'true') {
+                navigation.navigate("Bottom")
+            }
+        } else {
+            console.log(await res.toString())
+        }
+    }
 
     const connection = async () => {
         console.log(email)
@@ -30,7 +83,6 @@ export default function Authentification({navigation}) {
             if (res) {
                 let responseJson = await res.json()
                 if (responseJson != 'Not found') {
-                    console.log(responseJson.token);
 
                     try {
                         await AsyncStorage.setItem(
@@ -41,6 +93,12 @@ export default function Authentification({navigation}) {
                             '@emailUser',
                             email
                         );
+                        await AsyncStorage.setItem(
+                            '@isAdmin',
+                            responseJson.admin.toString()
+                        );
+                        setPassword('') // TODO: On revient dessus pour finir ce truc de merde
+                        navigation.navigate("Bottom")
                     } catch (error) {
                         // Error saving data
                     }
@@ -57,6 +115,13 @@ export default function Authentification({navigation}) {
         }
 
 
+    }
+
+    const goToSignup = () => {
+        navigation.navigate('Signup')
+    }
+    const goToAccueil = () => {
+        navigation.navigate('Accueil')
     }
 
 
@@ -89,7 +154,11 @@ export default function Authentification({navigation}) {
                 </Button>
             </View>
             <View style={styles.loginBtn} >
-                <Button title="Signup" >
+                <Button onPress={goToSignup}  title="S'inscrire" >
+                </Button>
+            </View>
+            <View style={styles.loginBtn} >
+                <Button onPress={goToAccueil}  title="Accueil" >
                 </Button>
             </View>
 

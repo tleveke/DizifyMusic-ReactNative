@@ -1,34 +1,32 @@
 import React, { useEffect, useState } from 'react'
-import { FlatList, View } from 'react-native'
-import { ActivityIndicator, Appbar, Button, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
+import { FlatList, View, StyleSheet } from 'react-native'
+import { ActivityIndicator, Appbar, Button, Card, Dialog, FAB, Text, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
 import ky from 'ky'
 
-import { StyleSheet } from 'react-native';
 import { apiUrl } from '../config'
-import TitleDialog from '../dialog/TitleDialog'
-import TitlePlaylistDialog from '../dialog/TitlePlaylistDialog'
+import PlaylistDialog from '../dialog/PlaylistDialog'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import UserDialog from '../dialog/UserDialog'
 
+
 /**
- * @author Matthieu BACHELIER
+ * @author LMF
  * @since 2020-11
  * @version 1.0
  */
-export default function TitlesScreen({ navigation }) {
-  const [titles, setTitles] = useState([])
+export default function PlaylistScreen({ navigation }) {
+  const [playlists, setPlaylists] = useState([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState(null)
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showUserDialog, setShowUserDialog] = useState(false)
-  const [showAddPlaylistDialog, setShowAddPlaylistDialog] = useState(false)
 
-  const [title, setTitle] = useState({})
+  const [playlist, setPlaylist] = useState({})
   const [token, setToken] = useState(false)
-  const [isAdmin, setIsAdmin] = useState(false)
   const [emailUser, setEmailUser] = useState("")
+  const [isAdmin, setIsAdmin] = useState(false)
 
   const styles = StyleSheet.create({
     fab: {
@@ -40,20 +38,20 @@ export default function TitlesScreen({ navigation }) {
     },
   })
 
+
   useEffect(() => {
     setLoading(true)
     getTokenEmailAdmin()
-    
+    //getPlaylists()
+
     const unsubscribe = navigation.addListener('focus', () => {
       if (emailUser != '') {
-        getTitles();
+        getPlaylists();
       }
     });
 
+
     return unsubscribe;
-
-
-    //getTitles()
 
   }, [navigation])
 
@@ -65,13 +63,13 @@ export default function TitlesScreen({ navigation }) {
       setIsAdmin((isAdmin === 'true'))
       setEmailUser(emailUser)
       setToken(value)
-      getTitleToken(value) // A revoir plus tard
+      getPlaylistToken(value, emailUser) // A revoir plus tard
     } catch (e) {
       // error reading value
     }
   }
 
-  const getTitleToken = async (tokenn) => { // A revoir plus tard
+  const getPlaylistToken = async (tokenn, emailUser) => { // A revoir plus tard
 
     // API Setup
 
@@ -88,22 +86,21 @@ export default function TitlesScreen({ navigation }) {
 
     // API Setup
 
-    const res = await api.get(`${apiUrl}/titles/` + emailUser);
+    const res = await api.get(`${apiUrl}/playlists/user/` + emailUser);
 
     if (res) {
       const data = await res.json()
-      setTitles(data)
+      setPlaylists(data)
+      console.log(data);
     } else {
       setMessage('Erreur réseau')
     }
     setLoading(false)
   }
 
-  const getTitles = async () => {
+  const getPlaylists = async () => {
 
     // API Setup
-
-
 
     const api = ky.extend({
       hooks: {
@@ -117,19 +114,18 @@ export default function TitlesScreen({ navigation }) {
     });
 
     // API Setup
-    const res = await api.get(`${apiUrl}/titles/` + emailUser);
+    const res = await api.get(`${apiUrl}/playlists/user/` + emailUser);
 
     if (res) {
       const data = await res.json()
-      setTitles(data);
+      setPlaylists(data)
     } else {
       setMessage('Erreur réseau')
     }
     setLoading(false)
   }
 
-  const addTitle = async (a) => {
-
+  const addPlaylist = async (a) => {
     try {
 
       // API Setup
@@ -147,22 +143,22 @@ export default function TitlesScreen({ navigation }) {
 
       // API Setup
 
-
-      const res = await api.post(`${apiUrl}/title`, { json: a })
+      a.user = { "email": emailUser };
+      console.log(a);
+      const res = await api.post(`${apiUrl}/playlist`, { json: a })
       if (res) {
-        getTitles()
-        setMessage('Nouvel Titre ajouté !')
+        getPlaylists()
+        setMessage('Nouvel auteur ajouté !')
       } else {
         setMessage("Erreur lors de l'ajout")
       }
     } catch (error) {
       setMessage("Erreur lors de l'ajout")
     }
-    //console.log(a);
     setShowAddDialog(false)
   }
 
-  const editTitle = async (a) => {
+  const editPlaylist = async (a) => {
 
 
     // API Setup
@@ -180,9 +176,9 @@ export default function TitlesScreen({ navigation }) {
 
     // API Setup
     try {
-      const res = await api.put(`${apiUrl}/title`, { json: a })
+      const res = await api.put(`${apiUrl}/playlist`, { json: a })
       if (res) {
-        getTitles()
+        getPlaylists()
         setMessage('Auteur modifié !')
       } else {
         setMessage('Erreur lors de la modification')
@@ -193,7 +189,7 @@ export default function TitlesScreen({ navigation }) {
     setShowEditDialog(false)
   }
 
-  const deleteTitle = async (item) => {
+  const deletePlaylist = async (item) => {
 
     // API Setup
 
@@ -210,176 +206,90 @@ export default function TitlesScreen({ navigation }) {
 
     // API Setup
 
-    const res = await api.delete(`${apiUrl}/title/` + item.id)
+    const res = await api.delete(`${apiUrl}/playlist/` + item.id)
     if (res) {
       setLoading(true)
-      getTitles()
+      getPlaylists()
     } else {
       setMessage('Erreur réseau')
     }
     setShowDeleteDialog(false)
   }
 
-  const convertDuree = (duree) => {
 
-    //if (duree)
-    let min = Math.trunc(duree / 60)
-    let sec = duree % 60
-    if (sec < 10) {
-      sec = `0${sec}`;
-    }
-    if (min < 10) {
-      min = `0${min}`;
-    }
-    return `${min}:${sec}`
-  }
-
-  const getAlbumEntitled = (item) => {
-    let alent = ''
-    if (item.album != null) {
-      alent = `dans ${item.album.entitled}`;
-    }
-    return alent;
-  }
-
-  const changeFavoris = async (item) => {
-    // API Setup
-
-    const api = ky.extend({
-      hooks: {
-        beforeRequest: [
-          request => {
-            request.headers.set('Authorization', 'Bearer ' + token);
-            request.headers.set('Content-Type', 'application/json');
-          }
-        ]
-      }
+  const goToListTitles = (item) => {
+    navigation.navigate('ShowTitlePlaylist', {
+      playlist: item
     });
-
-    // API Setup
-
-    var favoris = {
-      "user": { "email": emailUser },
-      "titles": [item]
-    }
-    console.log(favoris)
-    const res = await api.put(`${apiUrl}/favoris/title/`, { json: favoris });
-
-    if (res) {
-      getTitles()
-    } else {
-      setMessage('Erreur réseau')
-    }
   }
 
-
-
-  const goToDiconnect = async () => {
-    try {
-      await AsyncStorage.removeItem('@bearerToken')
-    } catch(e) {
-      // remove error
-    }
-    navigation.navigate('Accueil');
-  }
-  const editUser = () => {
-    setShowUserDialog(false)
-    setMessage('Profil modifié');
-  }
-
-  const addTitleinPlaylist = async (a) => {
-    console.log(a);
-    console.log(title);
-
-    // API Setup
-
-    const api = ky.extend({
-      hooks: {
-        beforeRequest: [
-          request => {
-            request.headers.set('Authorization', 'Bearer ' + token);
-            request.headers.set('Content-Type', 'application/json');
-          }
-        ]
-      }
-    });
-
-    // API Setup
-    let jsonTab = [];
-    a.titles.forEach(element => {
-      jsonTab.push({id:element.id, titles: [{id:a.id}]});
-    });
-    console.log(jsonTab);
-
-    const res = await api.put(`${apiUrl}/playlist/title`,{json:jsonTab});
-
-    if (res) {
-      const data = await res.json()
-      setShowAddPlaylistDialog(false)
-    } else {
-      setMessage('Erreur réseau')
-    }
-
-
-  }
-
-  const renderTitle = ({ item, index }) => {
-
-    let favIcon = 'heart-outline';
-    if (item.favoris == true) {
-      favIcon = 'heart';
-    }
+  const renderPlaylist = ({ item, index }) => {
 
     return (
       <Card style={{ margin: 16, elevation: 4 }}>
-        <Card.Title title={item.designation + ' ' + convertDuree(item.duree)} subtitle={`Réalisé par ${item.artist.alias} ${getAlbumEntitled(item)}`} />
-        <Card.Content>
-        { !isAdmin && (<FAB
-            style={styles.fab}
-            small
-            color="red"
-            icon={favIcon}
-            onPress={() => changeFavoris(item)}
-          />)}
-        </Card.Content>
+        <Card.Title title={item.nom} />
         <Card.Cover source={{ uri: 'https://i.pravatar.cc/300?u=' + item.image }} />
-        { isAdmin && (<Card.Actions style={{ flex: 1 }}>
+        <Card.Content>
+
+          {/*<FlatList
+            data={item.titles}
+            extraData={item.titles}
+            renderItem={renderTitle}
+            keyExtractor={(item, index) => index.toString()}
+          />*/}
           <Button
             style={{ flexGrow: 1 }}
             onPress={() => {
-              setTitle(item)
+              goToListTitles(item)
+            }}>
+            Regarder les titres de la playlist
+          </Button>
+
+
+        </Card.Content>
+        <Card.Actions style={{ flex: 1 }}>
+          <Button
+            style={{ flexGrow: 1 }}
+            onPress={() => {
+              setPlaylist(item)
               setShowEditDialog(true)
             }}>
             Modifier
           </Button>
           <Button style={{ flexGrow: 1 }}
             onPress={() => {
-              setTitle(item)
+              setPlaylist(item)
               setShowDeleteDialog(true)
             }}>
             Supprimer
           </Button>
-        </Card.Actions>)}
-        { !isAdmin && (<Card.Actions style={{ flex: 1 }}>
-          <Button
-            style={{ flexGrow: 1 }}
-            onPress={() => {
-              setTitle(item)
-              setShowAddPlaylistDialog(true)
-            }}>
-            Ajouter à une playlist
-          </Button>
-        </Card.Actions>)}
+        </Card.Actions>
       </Card>
     )
   }
 
+  const deleteToken = async () => {
+    try {
+      await AsyncStorage.removeItem('@bearerToken')
+      return null
+    } catch (e) {
+      // remove error
+    }
+  }
+
+  const goToDiconnect = () => {
+    deleteToken()
+    navigation.navigate('Login')
+  }
+  const editUser = () => {
+    setShowUserDialog(false)
+    setMessage('Profil modifié');
+  }
+
   return (
-
     <Surface style={{ flex: 1 }}>
-
       <Appbar.Header style={{ backgroundColor: '#2F8D96' }}>
-        <Appbar.Content title="Titres" />
+        <Appbar.Content title="Playlist" />
         <Appbar.Action icon="account-edit" onPress={() => { setShowUserDialog(true) }} />
         <Appbar.Action icon="logout" onPress={() => { goToDiconnect() }} />
       </Appbar.Header>
@@ -388,53 +298,41 @@ export default function TitlesScreen({ navigation }) {
       ) : (
           <>
             <FlatList
-              data={titles}
-              extraData={titles}
-              renderItem={renderTitle}
+              data={playlists}
+              extraData={playlists}
+              renderItem={renderPlaylist}
               keyExtractor={(item, index) => index.toString()}
               ListFooterComponent={<View style={{ marginBottom: 48 }} />}
             />
           </>
         )}
-      { isAdmin && (<FAB
+      <FAB
         style={{
           position: 'absolute',
           margin: 16,
           right: 16,
           bottom: 0
         }}
-        icon="music-note-plus"
+        icon="music"
         onPress={() => setShowAddDialog(true)}
-      />)}
+      />
       {message && (
         <Snackbar visible={message !== null} onDismiss={() => setMessage(null)} duration={Snackbar.DURATION_SHORT}>
           {message}
         </Snackbar>
       )}
       <Portal>
-        <TitleDialog titlePopup="Ajouter un titre" visible={showAddDialog} onDismiss={() => setShowAddDialog(false)} onSubmit={addTitle} />
-        {title && showEditDialog && (
-          <TitleDialog
-            titlePopup="Modifier un titre"
-            title={title}
+        <PlaylistDialog titlePopup="Ajouter une playlist" visible={showAddDialog} onDismiss={() => setShowAddDialog(false)} onSubmit={addPlaylist} />
+        {playlist && showEditDialog && (
+          <PlaylistDialog
+            titlePopup="Modifier une playlist"
+            playlist={playlist}
             visible={showEditDialog}
             onDismiss={() => {
               setShowEditDialog(false)
-              setTitle(null)
+              setPlaylist(null)
             }}
-            onSubmit={editTitle}
-          />
-        )}
-        {title && showAddPlaylistDialog && (
-          <TitlePlaylistDialog
-            titlePopup="Ajouter ce titre dans des playlists"
-            title={title}
-            visible={showAddPlaylistDialog}
-            onDismiss={() => {
-              setShowAddPlaylistDialog(false)
-              //setTitle(null)
-            }}
-            onSubmit={addTitleinPlaylist}
+            onSubmit={editPlaylist}
           />
         )}
         {showUserDialog && (
@@ -455,7 +353,7 @@ export default function TitlesScreen({ navigation }) {
           <Dialog.Actions>
             <View>
               <Button onPress={() => {
-                deleteTitle(title)
+                deletePlaylist(playlist)
                 setShowDeleteDialog(false)
               }}>Oui</Button>
               <Button onPress={() => {

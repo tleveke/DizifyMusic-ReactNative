@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { FlatList, View, StyleSheet } from 'react-native'
-import { ActivityIndicator, Button, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
+import { ActivityIndicator,Appbar, Button, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
 import ky from 'ky'
 
 import { apiUrl } from '../config'
 import ArtistDialog from '../dialog/ArtistDialog'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import UserDialog from '../dialog/UserDialog'
 
 
 /**
@@ -13,17 +14,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
  * @since 2020-11
  * @version 1.0
  */
-export default function ArtistScreen() {
+export default function ArtistScreen({navigation}) {
   const [artists, setArtists] = useState([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState(null)
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showUserDialog, setShowUserDialog] = useState(false)
 
   const [artist, setArtist] = useState({})
   const [token, setToken] = useState(false)
   const [emailUser, setEmailUser] = useState("")
+  const [isAdmin, setIsAdmin] = useState(false)
 
   const styles = StyleSheet.create({
     fab: {
@@ -38,24 +41,34 @@ export default function ArtistScreen() {
 
   useEffect(() => {
     setLoading(true)
-    getTokenEmail()
+    getTokenEmailAdmin()
     //getArtists()
 
-  }, [])
+    const unsubscribe = navigation.addListener('focus', () => {
+      if (emailUser != '') {
+        getArtists();
+      }
+    });
 
-  const getTokenEmail = async () => {
+    return unsubscribe;
+
+  }, [navigation])
+
+  const getTokenEmailAdmin = async () => {
     try {
       const value = await AsyncStorage.getItem('@bearerToken')
-      const emailUser = await AsyncStorage.getItem('@emailUser')
-      setEmailUser(emailUser)
+      const emailUserr = await AsyncStorage.getItem('@emailUser')
+      const isAdmin = await AsyncStorage.getItem('@isAdmin')
+      setIsAdmin((isAdmin === 'true'))
+      setEmailUser(emailUserr)
       setToken(value)
-      getArtistToken(value) // A revoir plus tard
+      getArtistToken(value,emailUserr) // A revoir plus tard
     } catch (e) {
       // error reading value
     }
   }
 
-  const getArtistToken = async (tokenn) => { // A revoir plus tard
+  const getArtistToken = async (tokenn,emailUserr) => { // A revoir plus tard
 
     // API Setup
 
@@ -71,16 +84,16 @@ export default function ArtistScreen() {
     });
 
     // API Setup
-
-    const res = await api.get(`${apiUrl}/artists/` + emailUser);
+    console.log(`${apiUrl}/artists/` + emailUserr)
+    const res = await api.get(`${apiUrl}/artists/` + emailUserr);
 
     if (res) {
       const data = await res.json()
       setArtists(data)
+      setLoading(false)
     } else {
       setMessage('Erreur réseau')
     }
-    setLoading(false)
   }
 
   const getArtists = async () => {
@@ -100,6 +113,7 @@ export default function ArtistScreen() {
 
     // API Setup
 
+    console.log(`${apiUrl}/artists/` + emailUser);
     const res = await api.get(`${apiUrl}/artists/` + emailUser);
 
     if (res) {
@@ -232,6 +246,25 @@ export default function ArtistScreen() {
     setLoading(false)
   }
 
+  const deleteToken = async () => {
+    try {
+      await AsyncStorage.removeItem('@bearerToken')
+      return null
+    } catch (e) {
+      // remove error
+    }
+  }
+
+  const goToDiconnect = () => {
+    deleteToken()
+    navigation.navigate('Login')
+  }
+
+  const editUser = () => {
+    setShowUserDialog(false)
+    setMessage('Profil modifié');
+  } 
+
   const renderArtist = ({ item, index }) => {
 
     let favIcon = 'heart-outline';
@@ -243,16 +276,16 @@ export default function ArtistScreen() {
       <Card style={{ margin: 16, elevation: 4 }}>
         <Card.Title title={item.alias} subtitle={`Né(e) en ${item.annee}`} />
         <Card.Content>
-          <FAB
+        { !isAdmin && ( <FAB
             style={styles.fab}
             small
             color="red"
             icon={favIcon}
             onPress={() => changeFavoris(item)}
-          />
+          />)}
         </Card.Content>
-        <Card.Cover source={{ uri: 'https://i.pravatar.cc/300?u=' + index }} />
-        <Card.Actions style={{ flex: 1 }}>
+        <Card.Cover source={{ uri: 'https://i.pravatar.cc/300?u=' + item.avatar }} />
+        { isAdmin && ( <Card.Actions style={{ flex: 1 }}>
           <Button
             style={{ flexGrow: 1 }}
             onPress={() => {
@@ -268,13 +301,18 @@ export default function ArtistScreen() {
             }}>
             Supprimer
           </Button>
-        </Card.Actions>
+        </Card.Actions> )}
       </Card>
     )
   }
 
   return (
     <Surface style={{ flex: 1 }}>
+    <Appbar.Header style={{ backgroundColor: '#2F8D96' }}>
+      <Appbar.Content title="Artiste" />
+      <Appbar.Action icon="account-edit" onPress={() => { setShowUserDialog(true) }} />
+      <Appbar.Action icon="logout" onPress={() => { goToDiconnect() }} />
+    </Appbar.Header>
       {loading ? (
         <ActivityIndicator style={{ flex: 1, justifyContent: 'center', alignContent: 'center', height: '100%' }} />
       ) : (
@@ -288,7 +326,7 @@ export default function ArtistScreen() {
             />
           </>
         )}
-      <FAB
+      { isAdmin && ( <FAB
         style={{
           position: 'absolute',
           margin: 16,
@@ -297,7 +335,7 @@ export default function ArtistScreen() {
         }}
         icon="account-plus"
         onPress={() => setShowAddDialog(true)}
-      />
+      /> )}
       {message && (
         <Snackbar visible={message !== null} onDismiss={() => setMessage(null)} duration={Snackbar.DURATION_SHORT}>
           {message}
@@ -315,6 +353,16 @@ export default function ArtistScreen() {
               setArtist(null)
             }}
             onSubmit={editArtist}
+          />
+        )}
+        {showUserDialog && (
+          <UserDialog
+            titlePopup="Modifier votre profil"
+            visible={showUserDialog}
+            onDismiss={() => {
+              setShowUserDialog(false)
+            }}
+            onSubmit={editUser}
           />
         )}
         <Dialog visible={showDeleteDialog}>
