@@ -91,9 +91,9 @@ export default function AlbumDialog({ titlePopup, album: initialAlbum = {}, visi
 
 
     return (
-        <Dialog onPress={Keyboard.dismiss()} visible={visible} onDismiss={onDismiss}>
+        <Dialog visible={visible} onDismiss={onDismiss}>
             <Dialog.Title>{titlePopup}</Dialog.Title>
-            <Dialog.Content onPress={Keyboard.dismiss()}>
+            <Dialog.Content>
                 <TextInput
                     label="Nom de l'album"
                     value={album.entitled}
