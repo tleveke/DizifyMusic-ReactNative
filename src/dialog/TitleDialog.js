@@ -165,7 +165,7 @@ export default function TitleDialog({ titlePopup, title: initialTitle = {}, visi
                     onChangeText={(image) => setTitle({ ...title, image })}
                     returnKeyType="done"
                     blurOnSubmit={false}
-                    onSubmitEditing={() => idArtistRef.current.focus()}
+                    onSubmitEditing={() => Keyboard.dismiss()}
                 />
                 
 

@@ -35,7 +35,7 @@ export default function PlaylistDialog({ titlePopup, playlist: initialAuthor = {
           onChangeText={(image) => setAuthor({ ...playlist, image })}
           returnKeyType="done"
           blurOnSubmit={false}
-          onSubmitEditing={() => onSubmit(playlist)}
+          onSubmitEditing={() => Keyboard.dismiss()}
         />
       </Dialog.Content>
       <Dialog.Actions>

@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import SectionedMultiSelect from 'react-native-sectioned-multi-select';
 import ky from 'ky'
+import { Keyboard } from 'react-native'; 
 
 import { apiUrl } from '../config'
 import AsyncStorage from '@react-native-async-storage/async-storage'

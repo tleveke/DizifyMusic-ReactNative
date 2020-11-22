@@ -45,7 +45,7 @@ export default function AuthorDialog({ titlePopup, artist: initialAuthor = {}, v
           keyboardType="numeric"
           returnKeyType="done"
           blurOnSubmit={false}
-          onSubmitEditing={() => onSubmit(artist)}
+          onSubmitEditing={() => Keyboard.dismiss()}
         />
       </Dialog.Content>
       <Dialog.Actions>

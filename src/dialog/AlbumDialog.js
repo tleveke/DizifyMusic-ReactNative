@@ -91,9 +91,9 @@ export default function AlbumDialog({ titlePopup, album: initialAlbum = {}, visi
 
 
     return (
-        <Dialog onPress={Keyboard.dismiss} visible={visible} onDismiss={onDismiss}>
+        <Dialog onPress={Keyboard.dismiss()} visible={visible} onDismiss={onDismiss}>
             <Dialog.Title>{titlePopup}</Dialog.Title>
-            <Dialog.Content>
+            <Dialog.Content onPress={Keyboard.dismiss()}>
                 <TextInput
                     label="Nom de l'album"
                     value={album.entitled}
@@ -119,7 +119,7 @@ export default function AlbumDialog({ titlePopup, album: initialAlbum = {}, visi
                     onChangeText={(image) => setAlbum({ ...album, image })}
                     returnKeyType="done"
                     blurOnSubmit={false}
-                    onSubmitEditing={() => idArtistRef.current.focus()}
+                    onSubmitEditing={() => Keyboard.dismiss()}
                 />
 
                 <DropDown
