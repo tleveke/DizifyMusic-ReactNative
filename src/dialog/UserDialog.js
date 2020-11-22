@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Button, Dialog, TextInput } from 'react-native-paper'
 import ky from 'ky'
-import { Keyboard } from 'react-native'; 
 
 import { apiUrl } from '../config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -125,7 +124,7 @@ export default function UserDialog({ titlePopup, visible, onDismiss, onSubmit })
                     keyboardType="numeric"
                     returnKeyType="done"
                     blurOnSubmit={false}
-                    onSubmitEditing={() => Keyboard.dismiss()}
+                    onSubmitEditing={() => onSubmit(user)}
                 />
             </Dialog.Content>
             <Dialog.Actions>
