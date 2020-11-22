@@ -273,6 +273,14 @@ export default function AlbumScreen({ navigation }) {
     navigation.navigate('Accueil');
   }
 
+  const goToListTitles = (item) => {
+    navigation.navigate('ListTitlesAlbumArtist', {
+      typeColonne: 'album',
+      idColonne: item.id,
+      nomColonne: item.entitled
+    });
+  }
+
   const editUser = () => {
     setShowUserDialog(false)
     setMessage('Profil modifié');
@@ -313,6 +321,15 @@ export default function AlbumScreen({ navigation }) {
               setShowDeleteDialog(true)
             }}>
             Supprimer
+          </Button>
+        </Card.Actions>)}
+        { !isAdmin && (<Card.Actions style={{ flex: 1 }}>
+          <Button
+            style={{ flexGrow: 1 }}
+            onPress={() => {
+              goToListTitles(item)
+            }}>
+            Voir les titres
           </Button>
         </Card.Actions>)}
       </Card>

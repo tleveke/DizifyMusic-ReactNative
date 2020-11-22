@@ -120,11 +120,10 @@ export default function FavorisScreen({ navigation }) {
 
         if (res) {
             try {
-                console.log(await res.toString())
-                /*const data = await res.json()
-                setAlbums(data.albums)
+                const data = await res.json()
+                setAlbums(data.albums) 
                 setArtists(data.artists)
-                setTitles(data.titles)*/
+                setTitles(data.titles)
             }
             catch (e) {
                 setAlbums([])

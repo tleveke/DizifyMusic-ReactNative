@@ -12,6 +12,8 @@ import Authentification from '../screens/Authentification'
 import SignupScreen from '../screens/Signup'
 import PlaylistScreen from '../screens/Playlist'
 import PlaylistTitleScreen from '../screens/PlaylistTitleScreen'
+import TitlesAlbumArtistScreen from '../screens/TitlesAlbumArtist'
+import AlbumArtistScreen from '../screens/AlbumArtist'
 import AccueilScreen from '../screens/Accueil'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -108,22 +110,6 @@ export default function AppContainerScreen({ navigation }) {
     )
   }
 
-  const deconnexion = () => {
-
-    useEffect(() => {
-
-      const deleteToken = async () => {
-        try {
-          await AsyncStorage.removeItem('@bearerToken')
-          navigation.navigate('Accueil');
-        } catch (e) {
-          // remove error
-        }
-      }
-      deleteToken()
-    }, [])
-  }
-
   const stack = (
     <NavigationContainer>
       <Stack.Navigator headerMode="none">
@@ -140,8 +126,12 @@ export default function AppContainerScreen({ navigation }) {
           component={SignupScreen}
         />
         <Stack.Screen
-          name="Deco"
-          component={deconnexion}
+          name="ListTitlesAlbumArtist"
+          component={TitlesAlbumArtistScreen}
+        />
+        <Stack.Screen
+          name="ListAlbumsArtist"
+          component={AlbumArtistScreen}
         />
         <Stack.Screen
           name="ShowTitlePlaylist"
@@ -156,6 +146,5 @@ export default function AppContainerScreen({ navigation }) {
       </Stack.Navigator>
     </NavigationContainer>
   )
-
   return stack
 }

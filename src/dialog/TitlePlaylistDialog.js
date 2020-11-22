@@ -16,7 +16,6 @@ export default function TitlePlaylistDialog({ titlePopup, title: initialAuthor =
     // Initialisation de l'état interne du composant
     const [title, setAuthor] = useState(initialAuthor)
     const [playlists, setPlaylists] = useState([])
-    const [token, setToken] = useState(false)
     const [selectedItems,setSelectedItems] = useState([])
 
     // Références pour changer le focus automatiquement
@@ -31,15 +30,15 @@ export default function TitlePlaylistDialog({ titlePopup, title: initialAuthor =
     const getToken = async () => {
         try {
             const value = await AsyncStorage.getItem('@bearerToken')
+            const emailUser = await AsyncStorage.getItem('@emailUser')
             console.log(value)
-            setToken(value);
-            getPlaylistToken(value) // A revoir plus tard
+            getPlaylistToken(value,emailUser) // A revoir plus tard
         } catch (e) {
             //console.log(e);
         }
     }
 
-    const getPlaylistToken = async (tokenn) => { // A revoir plus tard
+    const getPlaylistToken = async (tokenn,emailUser) => { // A revoir plus tard
 
         // API Setup
 
@@ -55,21 +54,13 @@ export default function TitlePlaylistDialog({ titlePopup, title: initialAuthor =
         });
 
         // API Setup
-
-        const res = await api.get(`${apiUrl}/playlists`);
+        
+        const res = await api.get(`${apiUrl}/playlists/user/`+emailUser);
         if (res) {
             const data = await res.json()
-            //setPlaylists(data);
-            //console.log(data);
             let children = [];
             let tabTempo = [{ name: 'Playlist', id: 0, children: [] }]
             data.forEach(playlist => {
-                /*if (playlist.titles.includes(title)) {
-                    console.log("ddqqdsdsqdqsqsdqsqdsqsqqdsqsd");
-                    selectedItems.push(playlist.id.toString())
-                    setSelectedItems(selectedItems)
-                }*/
-
                 tabTempo[0].children.push({ name: playlist.nom, id: playlist.id.toString() })
             });
             setPlaylists(tabTempo);
@@ -82,11 +73,6 @@ export default function TitlePlaylistDialog({ titlePopup, title: initialAuthor =
         console.log(selectedItems)
         setSelectedItems(selectedItems)
     }
-
-    /*const onSelectedItemObjectsChange = (selectedItems) => {
-        console.log(selectedItems)
-        console.log("sddssddsssdsdsdsdsdsds");
-    }*/
 
     const beforeSubmit = () => {
         

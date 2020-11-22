@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { FlatList, View, StyleSheet } from 'react-native'
-import { ActivityIndicator,Appbar, Button, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
+import { ActivityIndicator, Appbar, Button, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
 import ky from 'ky'
 
 import { apiUrl } from '../config'
@@ -14,7 +14,7 @@ import UserDialog from '../dialog/UserDialog'
  * @since 2020-11
  * @version 1.0
  */
-export default function ArtistScreen({navigation}) {
+export default function ArtistScreen({ navigation }) {
   const [artists, setArtists] = useState([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState(null)
@@ -62,13 +62,13 @@ export default function ArtistScreen({navigation}) {
       setIsAdmin((isAdmin === 'true'))
       setEmailUser(emailUserr)
       setToken(value)
-      getArtistToken(value,emailUserr) // A revoir plus tard
+      getArtistToken(value, emailUserr) // A revoir plus tard
     } catch (e) {
       // error reading value
     }
   }
 
-  const getArtistToken = async (tokenn,emailUserr) => { // A revoir plus tard
+  const getArtistToken = async (tokenn, emailUserr) => { // A revoir plus tard
 
     // API Setup
 
@@ -232,7 +232,7 @@ export default function ArtistScreen({navigation}) {
     // API Setup
 
     var favoris = {
-      "user": {"email":emailUser},
+      "user": { "email": emailUser },
       "artists": [item]
     }
     console.log(favoris)
@@ -255,6 +255,20 @@ export default function ArtistScreen({navigation}) {
     }
   }
 
+  const goToListTitles = (item) => {
+    navigation.navigate('ListTitlesAlbumArtist', {
+      typeColonne: 'artists',
+      idColonne: item.id,
+      nomColonne: item.alias
+    });
+  }
+  const goToListAlbums = (item) => {
+    navigation.navigate('ListAlbumsArtist', {
+      idColonne: item.id,
+      nomColonne: item.alias
+    });
+  }
+
   const goToDiconnect = () => {
     deleteToken()
     navigation.navigate('Login')
@@ -263,7 +277,7 @@ export default function ArtistScreen({navigation}) {
   const editUser = () => {
     setShowUserDialog(false)
     setMessage('Profil modifié');
-  } 
+  }
 
   const renderArtist = ({ item, index }) => {
 
@@ -273,10 +287,11 @@ export default function ArtistScreen({navigation}) {
     }
 
     return (
+
       <Card style={{ margin: 16, elevation: 4 }}>
         <Card.Title title={item.alias} subtitle={`Né(e) en ${item.annee}`} />
         <Card.Content>
-        { !isAdmin && ( <FAB
+          {!isAdmin && (<FAB
             style={styles.fab}
             small
             color="red"
@@ -285,7 +300,7 @@ export default function ArtistScreen({navigation}) {
           />)}
         </Card.Content>
         <Card.Cover source={{ uri: 'https://i.pravatar.cc/300?u=' + item.avatar }} />
-        { isAdmin && ( <Card.Actions style={{ flex: 1 }}>
+        { isAdmin && (<Card.Actions style={{ flex: 1 }}>
           <Button
             style={{ flexGrow: 1 }}
             onPress={() => {
@@ -301,18 +316,33 @@ export default function ArtistScreen({navigation}) {
             }}>
             Supprimer
           </Button>
-        </Card.Actions> )}
+        </Card.Actions>)}
+        { !isAdmin && (<Card.Actions style={{ flex: 1 }}>
+          <Button
+            style={{ flexGrow: 1 }}
+            onPress={() => {
+              goToListAlbums(item)
+            }}>
+            Voir les titres
+          </Button>
+          <Button style={{ flexGrow: 1 }}
+            onPress={() => {
+              goToListAlbums(item)
+            }}>
+            Voir les albums
+          </Button>
+        </Card.Actions>)}
       </Card>
     )
   }
 
   return (
     <Surface style={{ flex: 1 }}>
-    <Appbar.Header style={{ backgroundColor: '#2F8D96' }}>
-      <Appbar.Content title="Artiste" />
-      <Appbar.Action icon="account-edit" onPress={() => { setShowUserDialog(true) }} />
-      <Appbar.Action icon="logout" onPress={() => { goToDiconnect() }} />
-    </Appbar.Header>
+      <Appbar.Header style={{ backgroundColor: '#2F8D96' }}>
+        <Appbar.Content title="Artiste" />
+        <Appbar.Action icon="account-edit" onPress={() => { setShowUserDialog(true) }} />
+        <Appbar.Action icon="logout" onPress={() => { goToDiconnect() }} />
+      </Appbar.Header>
       {loading ? (
         <ActivityIndicator style={{ flex: 1, justifyContent: 'center', alignContent: 'center', height: '100%' }} />
       ) : (
@@ -326,7 +356,7 @@ export default function ArtistScreen({navigation}) {
             />
           </>
         )}
-      { isAdmin && ( <FAB
+      { isAdmin && (<FAB
         style={{
           position: 'absolute',
           margin: 16,
@@ -335,7 +365,7 @@ export default function ArtistScreen({navigation}) {
         }}
         icon="account-plus"
         onPress={() => setShowAddDialog(true)}
-      /> )}
+      />)}
       {message && (
         <Snackbar visible={message !== null} onDismiss={() => setMessage(null)} duration={Snackbar.DURATION_SHORT}>
           {message}

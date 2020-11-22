@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { FlatList, View,Text } from 'react-native'
+import { FlatList, View, Text } from 'react-native'
 import { ActivityIndicator, Appbar, Button, Card, Dialog, FAB, Paragraph, Portal, Snackbar, Surface, TextInput } from 'react-native-paper'
 import ky from 'ky'
 
-import { StyleSheet } from 'react-native';
+import Carousel from 'react-native-snap-carousel';
 import { apiUrl } from '../config'
-import TitleDialog from '../dialog/TitleDialog'
-import TitlePlaylistDialog from '../dialog/TitlePlaylistDialog'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import UserDialog from '../dialog/UserDialog'
 
 /**
  * @author Matthieu BACHELIER
@@ -17,36 +13,24 @@ import UserDialog from '../dialog/UserDialog'
  */
 export default function AccueilScreen({ navigation }) {
     const [titles, setTitles] = useState([])
+    const [albums, setAlbums] = useState([])
     const [loading, setLoading] = useState(true)
     const [message, setMessage] = useState(null)
-    const [title, setTitle] = useState({})
-
-    const styles = StyleSheet.create({
-        fab: {
-            position: 'absolute',
-            margin: 16,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "white"
-        },
-    })
 
     useEffect(() => {
         setLoading(true)
-        getTitles()
+        getTitlesAlbums()
         const unsubscribe = navigation.addListener('focus', () => {
-            getTitles();
+            getTitlesAlbums()
         });
 
         return unsubscribe;
-
-
-        //getTitles()
+        
 
     }, [navigation])
 
 
-    const getTitles = async () => {
+    const getTitlesAlbums = async () => {
 
         // API Setup
 
@@ -62,12 +46,20 @@ export default function AccueilScreen({ navigation }) {
         });
 
         // API Setup
-        const res = await api.get(`${apiUrl}/titles/accueil`);
+        const resArtist = await api.get(`${apiUrl}/titles/accueil`);
 
-        if (res) {
-            const data = await res.json()
+        if (resArtist) {
+            const data = await resArtist.json()
             setTitles(data);
-            console.log(data);
+        } else {
+            setMessage('Erreur réseau')
+        }
+
+        const resAlbum = await api.get(`${apiUrl}/albums/accueil`);
+
+        if (resAlbum) {
+            const data = await resAlbum.json()
+            setAlbums(data);
         } else {
             setMessage('Erreur réseau')
         }
@@ -105,25 +97,43 @@ export default function AccueilScreen({ navigation }) {
         )
     }
 
+    const renderAlbum = ({ item, index }) => {
+        return (
+            <Card style={{ margin: 16, elevation: 4 }}>
+                <Card.Title title={item.entitled + ' ' + convertDuree(item.dureeTotale)} subtitle={`Créé en ${item.annee} par ${item.artist.alias}`} />
+                <Card.Cover source={{ uri: 'https://i.pravatar.cc/300?u=' + item.image }} />
+            </Card>
+        )
+    }
+
     return (
 
         <Surface style={{ flex: 1 }}>
 
             <Appbar.Header style={{ backgroundColor: '#2F8D96' }}>
-                <Appbar.Content title="DizifyMusic" />
-                <Appbar.Action icon="login"   onPress={() => { navigation.navigate('Login') }} />
+                <Appbar.Content title="DizifyMusic - Accueil" />
+                <Appbar.Action icon="login" onPress={() => { navigation.navigate('Login') }} />
             </Appbar.Header>
             {loading ? (
                 <ActivityIndicator style={{ flex: 1, justifyContent: 'center', alignContent: 'center', height: '100%' }} />
             ) : (
                     <>
-                    <Text style={{alignSelf:"center", fontSize:20}}>Les Meilleurs Artistes</Text>
-                        <FlatList
+                        <Text style={{ alignSelf: "center", fontSize: 20 }}>Les Meilleurs Artistes</Text>
+                        <Carousel
+                            layout={'tinder'} layoutCardOffset={9}
                             data={titles}
-                            extraData={titles}
                             renderItem={renderTitle}
-                            keyExtractor={(item, index) => index.toString()}
-                            ListFooterComponent={<View style={{ marginBottom: 48 }} />}
+                            sliderWidth={500}
+                            itemWidth={400}
+                        />
+
+                        <Text style={{ alignSelf: "center", fontSize: 20 }}>Les Meilleurs Albums</Text>
+                        <Carousel
+                            layout={'tinder'} layoutCardOffset={9}
+                            data={albums}
+                            renderItem={renderAlbum}
+                            sliderWidth={500}
+                            itemWidth={400}
                         />
                     </>
                 )}
