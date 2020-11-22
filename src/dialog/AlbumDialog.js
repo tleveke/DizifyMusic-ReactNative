@@ -123,6 +123,7 @@ export default function AlbumDialog({ titlePopup, album: initialAlbum = {}, visi
                 />
 
                 <DropDown
+                    ref={idArtistRef}
                     label={'Choissisez un artiste'}
                     mode={'outlined'}
                     value={artist}
@@ -134,6 +135,7 @@ export default function AlbumDialog({ titlePopup, album: initialAlbum = {}, visi
                     inputProps={{
                         right: <TextInput.Icon name={'menu-down'} />,
                     }}
+                    onSubmitEditing={() => { beforeSubmit(); onSubmit(album) }}
                 />
 
             </Dialog.Content>

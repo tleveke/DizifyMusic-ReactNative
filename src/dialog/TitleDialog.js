@@ -28,6 +28,7 @@ export default function TitleDialog({ titlePopup, title: initialTitle = {}, visi
     const dureeRef = useRef(null)
     const imageRef = useRef(null)
     const idArtistRef = useRef(null)
+    const idAlbumRef = useRef(null)
 
     const styles = StyleSheet.create({
         containerStyle: {
@@ -170,6 +171,7 @@ export default function TitleDialog({ titlePopup, title: initialTitle = {}, visi
                 
 
                 <DropDown
+                    ref={idArtistRef}
                     label={'Choissisez un artiste'}
                     mode={'outlined'}
                     value={artist}
@@ -181,8 +183,10 @@ export default function TitleDialog({ titlePopup, title: initialTitle = {}, visi
                     inputProps={{
                         right: <TextInput.Icon name={'menu-down'} />,
                     }}
+                    onSubmitEditing={() => idAlbumRef.current.focus()}
                 />
                 <DropDown
+                    ref={idAlbumRef}
                     label={'Choissisez un Album'}
                     mode={'outlined'}
                     value={album}
@@ -194,6 +198,7 @@ export default function TitleDialog({ titlePopup, title: initialTitle = {}, visi
                     inputProps={{
                         right: <TextInput.Icon name={'menu-down'} />,
                     }}
+                    onSubmitEditing={() => { beforeSubmit(); onSubmit(title) }}
                 />
 
             </Dialog.Content>
