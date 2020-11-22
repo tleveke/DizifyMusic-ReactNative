@@ -137,7 +137,6 @@ export default function Authentification({ navigation }) {
 
             <Appbar.Header style={{ backgroundColor: '#2F8D96' }}>
                 <Appbar.Content title="DizifyMusic - Connexion" />
-                <Appbar.Action icon="login" onPress={() => { navigation.navigate('Login') }} />
             </Appbar.Header>
 
             <View style={styles.container}>

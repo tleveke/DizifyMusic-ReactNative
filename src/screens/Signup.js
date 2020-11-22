@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity, TouchableHighlight } from 'react-native';
-import {Snackbar} from 'react-native-paper';
+import { StyleSheet, Text, View, Button,Image, TextInput, TouchableOpacity, TouchableHighlight } from 'react-native';
+import { Snackbar, Surface, Appbar } from 'react-native-paper';
 import ky from 'ky'
 import { apiUrl } from '../config'
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -61,47 +61,56 @@ export default function SignupScreen({ navigation }) {
     }
 
     return (
-        <View style={styles.container}>
+        <Surface style={{ flex: 1 }}>
 
 
-            <Text style={styles.logo}>DizzifyMusic</Text>
-            <View style={styles.inputView} >
-                <TextInput
-                    style={styles.inputText}
-                    placeholder="Email..."
-                    placeholderTextColor="#003f5c"
-                    onChangeText={text => setEmail(text)} />
-            </View>
-            <View style={styles.inputView} >
-                <TextInput
-                    secureTextEntry
-                    style={styles.inputText}
-                    placeholder="Password..."
-                    placeholderTextColor="#003f5c"
-                    onChangeText={text => setPassword(text)} />
-            </View>
-            <View style={styles.inputView} >
-                <TextInput
-                    style={styles.inputText}
-                    placeholder="Pseudo..."
-                    placeholderTextColor="#003f5c"
-                    onChangeText={text => setPseudo(text)} />
-            </View>
-            <View style={styles.loginBtn} >
-                <Button title="S'inscrire" onPress={inscription} style={styles.loginBtn} >
-                </Button>
-            </View>
-            <View style={styles.loginBtn} >
-                <Button onPress={goToLogin} title="Retour sur la page de Connexion" >
-                </Button>
-            </View>
-            {message && (
-                <Snackbar visible={message !== null} onDismiss={() => setMessage(null)} duration={Snackbar.DURATION_SHORT}>
-                    {message}
-                </Snackbar>
-            )}
+            <Appbar.Header style={{ backgroundColor: '#2F8D96' }}>
+                <Appbar.Content title="DizifyMusic - Connexion" />
+            </Appbar.Header>
+            <View style={styles.container}>
 
-        </View>
+                <Image source={require('../assets/img/logo_dizify.png')} />
+
+
+                <Text style={styles.logo}>DizzifyMusic</Text>
+                <View style={styles.inputView} >
+                    <TextInput
+                        style={styles.inputText}
+                        placeholder="Email..."
+                        placeholderTextColor="white"
+                        onChangeText={text => setEmail(text)} />
+                </View>
+                <View style={styles.inputView} >
+                    <TextInput
+                        secureTextEntry
+                        style={styles.inputText}
+                        placeholder="Password..."
+                        placeholderTextColor="white"
+                        onChangeText={text => setPassword(text)} />
+                </View>
+                <View style={styles.inputView} >
+                    <TextInput
+                        style={styles.inputText}
+                        placeholder="Pseudo..."
+                        placeholderTextColor="white"
+                        onChangeText={text => setPseudo(text)} />
+                </View>
+                <View style={styles.loginBtn} >
+                    <Button title="S'inscrire" color="#FA2A45" onPress={inscription} style={styles.loginBtn} >
+                    </Button>
+                </View>
+                <View style={styles.loginBtn} >
+                    <Button onPress={goToLogin} color="#FA2A45" title="Retour sur la page de Connexion" >
+                    </Button>
+                </View>
+                {message && (
+                    <Snackbar visible={message !== null} onDismiss={() => setMessage(null)} duration={Snackbar.DURATION_SHORT}>
+                        {message}
+                    </Snackbar>
+                )}
+
+            </View>
+        </Surface>
     );
 }
 
@@ -111,7 +120,7 @@ export default function SignupScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#003f5c',
+        backgroundColor: 'white',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -123,7 +132,7 @@ const styles = StyleSheet.create({
     },
     inputView: {
         width: "80%",
-        backgroundColor: "#465881",
+        backgroundColor: "grey",
         borderRadius: 25,
         height: 50,
         marginBottom: 20,
@@ -138,15 +147,13 @@ const styles = StyleSheet.create({
         color: "white",
         fontSize: 11
     },
-    loginBtn: {
-        width: "80%",
-        backgroundColor: "#fb5b5a",
-        borderRadius: 25,
-        height: 50,
-        alignItems: "center",
-        justifyContent: "center",
-        marginTop: 40,
+    button: {
+        flexDirection: "row",
+        justifyContent: "space-between",
         marginBottom: 10
+    },
+    btnSize: {
+        width: "100%"
     },
     loginText: {
         color: "white"
