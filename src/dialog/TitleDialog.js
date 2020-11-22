@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Button, Dialog, TextInput } from 'react-native-paper'
 import DropDown from 'react-native-paper-dropdown';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Keyboard } from 'react-native';
 import ky from 'ky'
 
 import { apiUrl } from '../config'
@@ -28,7 +28,6 @@ export default function TitleDialog({ titlePopup, title: initialTitle = {}, visi
     const dureeRef = useRef(null)
     const imageRef = useRef(null)
     const idArtistRef = useRef(null)
-    const idAlbumRef = useRef(null)
 
     const styles = StyleSheet.create({
         containerStyle: {
@@ -138,7 +137,7 @@ export default function TitleDialog({ titlePopup, title: initialTitle = {}, visi
 
 
     return (
-        <Dialog visible={visible} onDismiss={onDismiss}>
+        <Dialog onPress={Keyboard.dismiss} visible={visible} onDismiss={onDismiss}>
             <Dialog.Title>{titlePopup}</Dialog.Title>
             <Dialog.Content>
                 <TextInput
@@ -171,7 +170,6 @@ export default function TitleDialog({ titlePopup, title: initialTitle = {}, visi
                 
 
                 <DropDown
-                    ref={idArtistRef}
                     label={'Choissisez un artiste'}
                     mode={'outlined'}
                     value={artist}
@@ -183,10 +181,8 @@ export default function TitleDialog({ titlePopup, title: initialTitle = {}, visi
                     inputProps={{
                         right: <TextInput.Icon name={'menu-down'} />,
                     }}
-                    onSubmitEditing={() => idAlbumRef.current.focus()}
                 />
                 <DropDown
-                    ref={idAlbumRef}
                     label={'Choissisez un Album'}
                     mode={'outlined'}
                     value={album}
@@ -198,7 +194,6 @@ export default function TitleDialog({ titlePopup, title: initialTitle = {}, visi
                     inputProps={{
                         right: <TextInput.Icon name={'menu-down'} />,
                     }}
-                    onSubmitEditing={() => { beforeSubmit(); onSubmit(title) }}
                 />
 
             </Dialog.Content>

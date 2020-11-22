@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Button, Dialog, TextInput } from 'react-native-paper'
 import DropDown from 'react-native-paper-dropdown';
-import { StyleSheet } from 'react-native';
+import { StyleSheet,Keyboard } from 'react-native';
 import ky from 'ky'
 
 import { apiUrl } from '../config'
@@ -91,7 +91,7 @@ export default function AlbumDialog({ titlePopup, album: initialAlbum = {}, visi
 
 
     return (
-        <Dialog visible={visible} onDismiss={onDismiss}>
+        <Dialog onPress={Keyboard.dismiss} visible={visible} onDismiss={onDismiss}>
             <Dialog.Title>{titlePopup}</Dialog.Title>
             <Dialog.Content>
                 <TextInput
@@ -123,7 +123,6 @@ export default function AlbumDialog({ titlePopup, album: initialAlbum = {}, visi
                 />
 
                 <DropDown
-                    ref={idArtistRef}
                     label={'Choissisez un artiste'}
                     mode={'outlined'}
                     value={artist}
@@ -135,7 +134,6 @@ export default function AlbumDialog({ titlePopup, album: initialAlbum = {}, visi
                     inputProps={{
                         right: <TextInput.Icon name={'menu-down'} />,
                     }}
-                    onSubmitEditing={() => { beforeSubmit(); onSubmit(album) }}
                 />
 
             </Dialog.Content>
